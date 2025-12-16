@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SVG Slide Player</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #111;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .player {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+    }
+
+    .stage object {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #111;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #222;
+      border-top: 1px solid #333;
+    }
+
+    button {
+      padding: 0.35rem 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #333;
+      color: #eee;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    button:hover:not(:disabled) {
+      background: #444;
+    }
+
+    /* Converter modal */
+    .converter-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .converter-modal.active {
+      display: flex;
+    }
+    .converter-content {
+      background: #222;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid #444;
+    }
+    .converter-content h2 {
+      margin-top: 0;
+      color: #fff;
+    }
+    .file-input-wrapper {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 2px dashed #555;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+    .file-input-wrapper:hover {
+      border-color: #777;
+    }
+    .file-input-wrapper input[type="file"] {
+      display: none;
+    }
+    .converter-progress {
+      margin: 1rem 0;
+      display: none;
+    }
+    .converter-progress.active {
+      display: block;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #4CAF50;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .converter-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+
+    /* SVG Editor Modal */
+    .editor-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2000;
+      flex-direction: column;
+    }
+    .editor-modal.active {
+      display: flex;
+    }
+    .editor-header {
+      background: #222;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #444;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .editor-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.2rem;
+    }
+    .editor-toolbar {
+      background: #1a1a1a;
+      padding: 0.5rem;
+      border-bottom: 1px solid #333;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .editor-mode-toggle {
+      display: flex;
+      gap: 0.25rem;
+      margin-right: 1rem;
+      padding-right: 1rem;
+      border-right: 1px solid #333;
+    }
+    .mode-btn {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #555;
+      background: #2a2a2a;
+      color: #aaa;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .mode-btn.active {
+      background: #4CAF50;
+      color: #fff;
+      border-color: #4CAF50;
+    }
+    .bpm-palette {
+      display: none;
+      background: #1a1a1a;
+      width: 200px;
+      border-right: 1px solid #333;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .bpm-palette.active {
+      display: block;
+    }
+    .bpm-palette h3 {
+      margin-top: 0;
+      color: #fff;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .bpm-shape-btn {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #444;
+      background: #2a2a2a;
+      color: #eee;
+      cursor: pointer;
+      border-radius: 4px;
+      text-align: left;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bpm-shape-btn:hover {
+      background: #333;
+    }
+    .bpm-shape-preview {
+      width: 30px;
+      height: 20px;
+      border: 1px solid #555;
+      background: #1a1a1a;
+      flex-shrink: 0;
+    }
+    .bpm-shape-preview.process {
+      background: #4CAF50;
+      border-radius: 2px;
+    }
+    .bpm-shape-preview.decision {
+      background: #FF9800;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+    .bpm-shape-preview.start {
+      background: #2196F3;
+      border-radius: 50%;
+    }
+    .bpm-shape-preview.end {
+      background: #f44336;
+      border-radius: 50%;
+    }
+    .bpm-shape-preview.subprocess {
+      background: #9C27B0;
+      border-radius: 4px;
+    }
+    .bpm-shape-preview.connector {
+      background: #607D8B;
+      height: 2px;
+      width: 40px;
+      position: relative;
+    }
+    .bpm-shape-preview.connector::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: -3px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid #607D8B;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    .connection-point {
+      fill: #4CAF50;
+      stroke: #fff;
+      stroke-width: 2;
+      cursor: crosshair;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .connection-point.visible {
+      opacity: 1;
+    }
+    .connection-point:hover {
+      fill: #66BB6A;
+    }
+    .connecting-line {
+      stroke: #333;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .tool-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #555;
+      background: #333;
+      color: #eee;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .tool-btn:hover {
+      background: #444;
+    }
+    .tool-btn.active {
+      background: #4CAF50;
+      border-color: #4CAF50;
+    }
+    .editor-workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .editor-canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2a2a2a;
+      padding: 2rem;
+      overflow: auto;
+    }
+    .editor-canvas {
+      background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      cursor: crosshair;
+    }
+    .editor-canvas.select-mode {
+      cursor: default;
+    }
+    .editor-properties {
+      width: 280px;
+      background: #1a1a1a;
+      border-left: 1px solid #333;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .editor-properties h3 {
+      margin-top: 0;
+      color: #fff;
+      font-size: 1rem;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.5rem;
+    }
+    .property-group {
+      margin-bottom: 1rem;
+    }
+    .property-group label {
+      display: block;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+    .property-group input,
+    .property-group select {
+      width: 100%;
+      padding: 0.4rem;
+      background: #333;
+      border: 1px solid #555;
+      color: #eee;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .property-group input[type="color"] {
+      height: 40px;
+      padding: 2px;
+      cursor: pointer;
+    }
+    .property-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .property-row .property-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .selected-element {
+      outline: 2px dashed #4CAF50;
+      outline-offset: 2px;
+    }
+
+    /* Simple fade+scale animation for elements in the SVG */
+    .svg-animate-in {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: fadeInScale 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <div class="stage">
+      <!-- SVG slides injected here -->
+      <object id="slideFrame" type="image/svg+xml"></object>
+    </div>
+    <div class="controls">
+      <button id="prevBtn">Prev (←)</button>
+      <button id="playBtn">Play</button>
+      <button id="pauseBtn" disabled>Pause</button>
+      <button id="nextBtn">Next (→)</button>
+      <button id="converterBtn" style="margin-left:1rem;">Convert PPTX</button>
+      <button id="editorBtn" style="margin-left:0.5rem;">New Slide</button>
+      <button id="editCurrentBtn" style="margin-left:0.5rem;">Edit Current</button>
+      <span id="status" style="margin-left:1rem;font-size:0.85rem;opacity:0.7;"></span>
+    </div>
+  </div>
+
+  <!-- Converter Modal -->
+  <div id="converterModal" class="converter-modal">
+    <div class="converter-content">
+      <h2>PowerPoint to SVG Converter</h2>
+      <p style="color: #aaa; margin-bottom: 1rem;">
+        Upload a PowerPoint (.pptx) file to convert slides to SVG format.
+      </p>
+      <div class="file-input-wrapper" id="fileInputWrapper">
+        <input type="file" id="pptxFileInput" accept=".pptx" />
+        <p style="color: #888; margin: 0.5rem 0;">Click to select or drag & drop</p>
+        <p style="color: #666; font-size: 0.85rem; margin: 0;">Supported: .pptx files</p>
+      </div>
+      <div class="converter-progress" id="converterProgress">
+        <div style="color: #aaa; margin-bottom: 0.5rem;">Converting slides...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="progressText" style="color: #888; font-size: 0.85rem; margin-top: 0.5rem;"></div>
+      </div>
+      <div class="converter-actions">
+        <button id="closeConverterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG Editor Modal -->
+  <div id="editorModal" class="editor-modal">
+    <div class="editor-header">
+      <h2>SVG Slide Editor</h2>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="editor-mode-toggle">
+          <button class="mode-btn active" data-mode="standard">Standard</button>
+          <button class="mode-btn" data-mode="bpm">BPM</button>
+        </div>
+        <button id="saveEditorBtn" class="tool-btn">Save & Add</button>
+        <button id="closeEditorBtn" class="tool-btn">Close</button>
+      </div>
+    </div>
+    <div class="editor-toolbar" id="standardToolbar">
+      <button class="tool-btn active" data-tool="select" title="Select (S)">Select</button>
+      <button class="tool-btn" data-tool="text" title="Text (T)">Text</button>
+      <button class="tool-btn" data-tool="rect" title="Rectangle (R)">Rectangle</button>
+      <button class="tool-btn" data-tool="circle" title="Circle (C)">Circle</button>
+      <button class="tool-btn" data-tool="line" title="Line (L)">Line</button>
+      <button class="tool-btn" data-tool="ellipse" title="Ellipse (E)">Ellipse</button>
+      <button class="tool-btn" id="deleteBtn" title="Delete (Del)">Delete</button>
+      <button class="tool-btn" id="animateToggleBtn" title="Toggle Animation">Animate</button>
+    </div>
+    <div class="editor-toolbar" id="bpmToolbar" style="display: none;">
+      <button class="tool-btn active" data-tool="select" title="Select (S)">Select</button>
+      <button class="tool-btn" data-tool="bpm-connector" title="Connector (A)">Connector</button>
+      <button class="tool-btn" id="deleteBtnBpm" title="Delete (Del)">Delete</button>
+      <button class="tool-btn" id="animateToggleBtnBpm" title="Toggle Animation">Animate</button>
+    </div>
+    <div class="editor-workspace">
+      <div class="bpm-palette" id="bpmPalette">
+        <h3>BPMN Shapes</h3>
+        <button class="bpm-shape-btn" data-shape="bpm-start">
+          <div class="bpm-shape-preview start"></div>
+          <span>Start Event</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-end">
+          <div class="bpm-shape-preview end"></div>
+          <span>End Event</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-process">
+          <div class="bpm-shape-preview process"></div>
+          <span>Process</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-decision">
+          <div class="bpm-shape-preview decision"></div>
+          <span>Decision</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-subprocess">
+          <div class="bpm-shape-preview subprocess"></div>
+          <span>Sub-Process</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-data">
+          <div class="bpm-shape-preview" style="background: #00BCD4; border-radius: 0; transform: skewX(-20deg);"></div>
+          <span>Data Object</span>
+        </button>
+        <button class="bpm-shape-btn" data-shape="bpm-connector">
+          <div class="bpm-shape-preview connector"></div>
+          <span>Connector</span>
+        </button>
+      </div>
+      <div class="editor-canvas-container">
+        <svg id="editorCanvas" class="editor-canvas" width="960" height="720" viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#333" />
+            </marker>
+          </defs>
+          <rect width="960" height="720" fill="#ffffff"/>
+        </svg>
+      </div>
+      <div class="editor-properties">
+        <h3>Properties</h3>
+        <div id="propertiesPanel">
+          <p style="color: #888; font-size: 0.85rem;">Select an element to edit properties</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSZip library for PPTX extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script>
+    // Define your slide list (can be modified dynamically)
+    let slides = [
+      'slides/demo-welcome.svg',
+      'slides/demo-features.svg',
+      'slides/demo-getting-started.svg',
+      'slides/bpm-order-process.svg',
+      'slides/bpm-customer-onboarding.svg',
+      'slides/bpm-approval-workflow.svg'
+    ];
+
+    let current = 0;
+    let autoPlayTimer = null;
+    const autoPlayDelay = 6000; // 6s per slide
+
+    const frame = document.getElementById('slideFrame');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const statusEl = document.getElementById('status');
+
+    function loadSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      current = index;
+      frame.data = slides[current];
+      statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+    }
+
+    function onSlideLoaded() {
+      const svgDoc = frame.contentDocument;
+      if (!svgDoc) return;
+
+      // Find elements you want to animate inside the SVG
+      // Convention: anything with data-animate="true"
+      const animElems = svgDoc.querySelectorAll('[data-animate="true"]');
+
+      // Reset class to re-trigger animation
+      animElems.forEach(el => {
+        el.classList.remove('svg-animate-in');
+        // Force reflow so animation restarts
+        void el.getBBox();
+        el.classList.add('svg-animate-in');
+      });
+    }
+
+    frame.addEventListener('load', onSlideLoaded);
+
+    function nextSlide(loop = true) {
+      let next = current + 1;
+      if (next >= slides.length) next = loop ? 0 : slides.length - 1;
+      loadSlide(next);
+    }
+
+    function prevSlide() {
+      let prev = current - 1;
+      if (prev < 0) prev = slides.length - 1;
+      loadSlide(prev);
+    }
+
+    prevBtn.onclick = () => {
+      stopAutoPlay();
+      prevSlide();
+    };
+    nextBtn.onclick = () => {
+      stopAutoPlay();
+      nextSlide(false);
+    };
+
+    function startAutoPlay() {
+      if (autoPlayTimer) return;
+      playBtn.disabled = true;
+      pauseBtn.disabled = false;
+      statusEl.textContent = `Auto-play (every ${autoPlayDelay / 1000}s) — Slide ${current + 1} / ${slides.length}`;
+      autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
+    }
+
+    function stopAutoPlay() {
+      if (!autoPlayTimer) return;
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      playBtn.disabled = false;
+      pauseBtn.disabled = true;
+      statusEl.textContent = `Manual mode — Slide ${current + 1} / ${slides.length}`;
+    }
+
+    playBtn.onclick = startAutoPlay;
+    pauseBtn.onclick = stopAutoPlay;
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        stopAutoPlay();
+        nextSlide(false);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        stopAutoPlay();
+        prevSlide();
+      }
+    });
+
+    // Initialize
+    loadSlide(current);
+
+    // ===== PowerPoint to SVG Converter =====
+    const converterModal = document.getElementById('converterModal');
+    const converterBtn = document.getElementById('converterBtn');
+    const closeConverterBtn = document.getElementById('closeConverterBtn');
+    const pptxFileInput = document.getElementById('pptxFileInput');
+    const fileInputWrapper = document.getElementById('fileInputWrapper');
+    const converterProgress = document.getElementById('converterProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    converterBtn.onclick = () => converterModal.classList.add('active');
+    closeConverterBtn.onclick = () => {
+      converterModal.classList.remove('active');
+      converterProgress.classList.remove('active');
+      pptxFileInput.value = '';
+    };
+    converterModal.onclick = (e) => {
+      if (e.target === converterModal) {
+        converterModal.classList.remove('active');
+        converterProgress.classList.remove('active');
+        pptxFileInput.value = '';
+      }
+    };
+
+    // File input handling
+    fileInputWrapper.onclick = () => pptxFileInput.click();
+    fileInputWrapper.ondragover = (e) => {
+      e.preventDefault();
+      fileInputWrapper.style.borderColor = '#777';
+    };
+    fileInputWrapper.ondragleave = () => {
+      fileInputWrapper.style.borderColor = '#555';
+    };
+    fileInputWrapper.ondrop = (e) => {
+      e.preventDefault();
+      fileInputWrapper.style.borderColor = '#555';
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].name.endsWith('.pptx')) {
+        handlePPTXFile(files[0]);
+      }
+    };
+    pptxFileInput.onchange = (e) => {
+      if (e.target.files.length > 0) {
+        handlePPTXFile(e.target.files[0]);
+      }
+    };
+
+    async function handlePPTXFile(file) {
+      converterProgress.classList.add('active');
+      progressFill.style.width = '0%';
+      progressText.textContent = 'Loading file...';
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        
+        progressFill.style.width = '20%';
+        progressText.textContent = 'Extracting slides...';
+
+        // Find slide files in PPTX structure
+        const slideFiles = [];
+        zip.forEach((relativePath, file) => {
+          if (relativePath.startsWith('ppt/slides/slide') && relativePath.endsWith('.xml')) {
+            slideFiles.push({ path: relativePath, file: file });
+          }
+        });
+        slideFiles.sort((a, b) => {
+          const numA = parseInt(a.path.match(/slide(\d+)/)?.[1] || '0');
+          const numB = parseInt(b.path.match(/slide(\d+)/)?.[1] || '0');
+          return numA - numB;
+        });
+
+        if (slideFiles.length === 0) {
+          throw new Error('No slides found in PowerPoint file');
+        }
+
+        progressFill.style.width = '40%';
+        progressText.textContent = `Found ${slideFiles.length} slides. Converting...`;
+
+        // Convert each slide to SVG
+        const convertedSlides = [];
+        for (let i = 0; i < slideFiles.length; i++) {
+          const slideData = await slideFiles[i].file.async('string');
+          const svgContent = await convertSlideToSVG(slideData, i + 1);
+          
+          // Create blob URL for the SVG
+          const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          convertedSlides.push(url);
+
+          progressFill.style.width = `${40 + (i + 1) * 50 / slideFiles.length}%`;
+          progressText.textContent = `Converted ${i + 1} / ${slideFiles.length} slides`;
+        }
+
+        // Add converted slides to the player
+        slides = [...slides, ...convertedSlides];
+        progressFill.style.width = '100%';
+        progressText.textContent = `Successfully converted ${convertedSlides.length} slides!`;
+        
+        // Reload current slide if needed
+        if (current >= slides.length - convertedSlides.length) {
+          loadSlide(slides.length - convertedSlides.length);
+        }
+
+        setTimeout(() => {
+          converterModal.classList.remove('active');
+          converterProgress.classList.remove('active');
+          pptxFileInput.value = '';
+        }, 2000);
+
+      } catch (error) {
+        console.error('Conversion error:', error);
+        progressText.textContent = `Error: ${error.message}`;
+        progressFill.style.background = '#f44336';
+      }
+    }
+
+    async function convertSlideToSVG(slideXML, slideNumber) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(slideXML, 'text/xml');
+      
+      // Extract slide dimensions (default PowerPoint slide size: 10x7.5 inches = 960x720 points)
+      const width = 960;
+      const height = 720;
+      
+      let svgContent = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n`;
+      svgContent += `  <rect width="${width}" height="${height}" fill="#ffffff"/>\n`;
+
+      // Extract text elements
+      const textElements = xmlDoc.querySelectorAll('a\\:t, t');
+      const textRuns = [];
+      xmlDoc.querySelectorAll('a\\:p, p').forEach((para, pIdx) => {
+        const texts = para.querySelectorAll('a\\:r, r');
+        texts.forEach((run, rIdx) => {
+          const text = run.querySelector('a\\:t, t');
+          if (text && text.textContent.trim()) {
+            const textProps = run.querySelector('a\\:rPr, rPr');
+            const paraProps = para.querySelector('a\\:pPr, pPr');
+            
+            let x = 100 + (pIdx * 50);
+            let y = 150 + (rIdx * 40);
+            let fontSize = 24;
+            let fill = '#000000';
+            let fontWeight = 'normal';
+
+            if (textProps) {
+              const sz = textProps.getAttribute('sz');
+              if (sz) fontSize = parseInt(sz) / 100;
+              
+              const b = textProps.getAttribute('b');
+              if (b === '1') fontWeight = 'bold';
+              
+              const solidFill = textProps.querySelector('a\\:solidFill, solidFill');
+              if (solidFill) {
+                const srgbClr = solidFill.querySelector('a\\:srgbClr, srgbClr');
+                if (srgbClr) {
+                  const val = srgbClr.getAttribute('val');
+                  if (val) fill = '#' + val;
+                }
+              }
+            }
+
+            // Try to get position from shape properties
+            const parentShape = para.closest('p\\:spTree, spTree')?.querySelector('a\\:xfrm, xfrm');
+            if (parentShape) {
+              const off = parentShape.querySelector('a\\:off, off');
+              if (off) {
+                x = parseInt(off.getAttribute('x') || x);
+                y = parseInt(off.getAttribute('y') || y);
+              }
+            }
+
+            textRuns.push({
+              text: text.textContent,
+              x: x,
+              y: y,
+              fontSize: fontSize,
+              fill: fill,
+              fontWeight: fontWeight
+            });
+          }
+        });
+      });
+
+      // Add text elements to SVG
+      textRuns.forEach((run, idx) => {
+        svgContent += `  <text x="${run.x}" y="${run.y}" font-size="${run.fontSize}" fill="${run.fill}" font-weight="${run.fontWeight}" data-animate="true">${escapeXML(run.text)}</text>\n`;
+      });
+
+      // Extract shapes (rectangles, circles, etc.)
+      const shapes = xmlDoc.querySelectorAll('a\\:prstGeom, prstGeom, a\\:cxnSp, cxnSp');
+      shapes.forEach((shape, idx) => {
+        const prst = shape.getAttribute('prst');
+        const xfrm = shape.closest('p\\:sp, sp')?.querySelector('a\\:xfrm, xfrm');
+        
+        if (xfrm) {
+          const off = xfrm.querySelector('a\\:off, off');
+          const ext = xfrm.querySelector('a\\:ext, ext');
+          
+          if (off && ext) {
+            const x = parseInt(off.getAttribute('x') || '0');
+            const y = parseInt(off.getAttribute('y') || '0');
+            const w = parseInt(ext.getAttribute('cx') || '100');
+            const h = parseInt(ext.getAttribute('cy') || '100');
+            
+            const spPr = shape.closest('p\\:sp, sp')?.querySelector('a\\:spPr, spPr');
+            let fill = '#4CAF50';
+            let stroke = '#333333';
+            
+            if (spPr) {
+              const solidFill = spPr.querySelector('a\\:solidFill, solidFill');
+              if (solidFill) {
+                const srgbClr = solidFill.querySelector('a\\:srgbClr, srgbClr');
+                if (srgbClr) {
+                  const val = srgbClr.getAttribute('val');
+                  if (val) fill = '#' + val;
+                }
+              }
+            }
+
+            if (prst === 'rect' || !prst) {
+              svgContent += `  <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" data-animate="true"/>\n`;
+            } else if (prst === 'ellipse' || prst === 'circle') {
+              const cx = x + w / 2;
+              const cy = y + h / 2;
+              const r = Math.min(w, h) / 2;
+              svgContent += `  <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" data-animate="true"/>\n`;
+            }
+          }
+        }
+      });
+
+      svgContent += `</svg>`;
+      return svgContent;
+    }
+
+    function escapeXML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
+    // ===== SVG Visual Editor =====
+    const editorModal = document.getElementById('editorModal');
+    const editorBtn = document.getElementById('editorBtn');
+    const editCurrentBtn = document.getElementById('editCurrentBtn');
+    const closeEditorBtn = document.getElementById('closeEditorBtn');
+    const saveEditorBtn = document.getElementById('saveEditorBtn');
+    const editorCanvas = document.getElementById('editorCanvas');
+    const propertiesPanel = document.getElementById('propertiesPanel');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const animateToggleBtn = document.getElementById('animateToggleBtn');
+    const standardToolbar = document.getElementById('standardToolbar');
+    const bpmToolbar = document.getElementById('bpmToolbar');
+    const bpmPalette = document.getElementById('bpmPalette');
+    const deleteBtnBpm = document.getElementById('deleteBtnBpm');
+    const animateToggleBtnBpm = document.getElementById('animateToggleBtnBpm');
+
+    let currentTool = 'select';
+    let selectedElement = null;
+    let isDrawing = false;
+    let startX, startY;
+    let currentElement = null;
+    let currentMode = 'standard';
+    let isConnecting = false;
+    let connectionStart = null;
+    let connectionStartElement = null;
+    let editingSlideIndex = null;
+
+    // Tool selection
+    document.querySelectorAll('[data-tool]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTool = btn.dataset.tool;
+        editorCanvas.classList.toggle('select-mode', currentTool === 'select');
+        if (selectedElement) {
+          selectedElement.classList.remove('selected-element');
+          selectedElement = null;
+          updatePropertiesPanel();
+        }
+      };
+    });
+
+    // Mode switching
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        
+        if (currentMode === 'bpm') {
+          standardToolbar.style.display = 'none';
+          bpmToolbar.style.display = 'flex';
+          bpmPalette.classList.add('active');
+          currentTool = 'select';
+          document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-tool="select"]').classList.add('active');
+        } else {
+          standardToolbar.style.display = 'flex';
+          bpmToolbar.style.display = 'none';
+          bpmPalette.classList.remove('active');
+          currentTool = 'select';
+          document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-tool="select"]').classList.add('active');
+        }
+        
+        if (selectedElement) {
+          selectedElement.classList.remove('selected-element');
+          selectedElement = null;
+          updatePropertiesPanel();
+        }
+      };
+    });
+
+    // BPM shape palette
+    document.querySelectorAll('.bpm-shape-btn').forEach(btn => {
+      btn.onclick = () => {
+        const shape = btn.dataset.shape;
+        currentTool = shape;
+        document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+        if (shape === 'bpm-connector') {
+          document.querySelector('[data-tool="bpm-connector"]').classList.add('active');
+        }
+      };
+    });
+
+    editorBtn.onclick = () => {
+      editingSlideIndex = null;
+      editorModal.classList.add('active');
+      initializeEditor();
+    };
+
+    editCurrentBtn.onclick = async () => {
+      if (current < 0 || current >= slides.length) return;
+      editingSlideIndex = current;
+      editorModal.classList.add('active');
+      await loadSlideIntoEditor(slides[current]);
+    };
+
+    closeEditorBtn.onclick = () => {
+      editorModal.classList.remove('active');
+      resetEditor();
+      editingSlideIndex = null;
+    };
+
+    // Drawing functionality
+    editorCanvas.onmousedown = (e) => {
+      const rect = editorCanvas.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 960;
+      const y = ((e.clientY - rect.top) / rect.height) * 720;
+
+      if (currentTool === 'select' || currentTool === 'bpm-connector') {
+        // Selection mode or connector mode
+        const target = e.target;
+        
+        if (currentTool === 'bpm-connector' && !isConnecting) {
+          // Start connector from a BPM element
+          if (target.getAttribute('data-bpm-type') || target.parentElement?.getAttribute('data-bpm-type')) {
+            const bpmElement = target.getAttribute('data-bpm-type') ? target : target.parentElement;
+            isConnecting = true;
+            connectionStart = getElementCenter(bpmElement);
+            connectionStartElement = bpmElement;
+            
+            // Create temporary line
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', connectionStart.x);
+            line.setAttribute('y1', connectionStart.y);
+            line.setAttribute('x2', x);
+            line.setAttribute('y2', y);
+            line.setAttribute('stroke', '#333');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('marker-end', 'url(#arrowhead)');
+            line.setAttribute('class', 'connecting-line');
+            line.setAttribute('data-connector-temp', 'true');
+            editorCanvas.appendChild(line);
+            currentElement = line;
+            return;
+          }
+        }
+        
+        if (currentTool === 'bpm-connector' && isConnecting) {
+          // End connector at a BPM element
+          if (target.getAttribute('data-bpm-type') || target.parentElement?.getAttribute('data-bpm-type')) {
+            const bpmElement = target.getAttribute('data-bpm-type') ? target : target.parentElement;
+            if (bpmElement !== connectionStartElement) {
+              const endPoint = getElementCenter(bpmElement);
+              if (currentElement) {
+                currentElement.setAttribute('x2', endPoint.x);
+                currentElement.setAttribute('y2', endPoint.y);
+                currentElement.removeAttribute('data-connector-temp');
+                currentElement.setAttribute('data-connector', 'true');
+                currentElement.setAttribute('data-from', connectionStartElement.getAttribute('data-bpm-id') || '');
+                currentElement.setAttribute('data-to', bpmElement.getAttribute('data-bpm-id') || '');
+                isConnecting = false;
+                connectionStart = null;
+                connectionStartElement = null;
+                currentElement = null;
+              }
+            }
+            return;
+          }
+        }
+        
+        if (target !== editorCanvas && !(target.tagName === 'rect' && target.getAttribute('fill') === '#ffffff')) {
+          if (selectedElement) {
+            selectedElement.classList.remove('selected-element');
+          }
+          selectedElement = target;
+          selectedElement.classList.add('selected-element');
+          updatePropertiesPanel();
+        } else {
+          if (selectedElement) {
+            selectedElement.classList.remove('selected-element');
+            selectedElement = null;
+            updatePropertiesPanel();
+          }
+          if (isConnecting && currentTool === 'bpm-connector') {
+            // Cancel connector
+            if (currentElement) {
+              currentElement.remove();
+              currentElement = null;
+            }
+            isConnecting = false;
+            connectionStart = null;
+            connectionStartElement = null;
+          }
+        }
+      } else {
+        // Drawing mode
+        isDrawing = true;
+        startX = x;
+        startY = y;
+        createElement(currentTool, x, y);
+      }
+    };
+    
+    function getElementCenter(element) {
+      const bbox = element.getBBox();
+      return {
+        x: bbox.x + bbox.width / 2,
+        y: bbox.y + bbox.height / 2
+      };
+    }
+
+    editorCanvas.onmousemove = (e) => {
+      const rect = editorCanvas.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 960;
+      const y = ((e.clientY - rect.top) / rect.height) * 720;
+      
+      if (isConnecting && currentElement && currentTool === 'bpm-connector') {
+        // Update connector line
+        currentElement.setAttribute('x2', x);
+        currentElement.setAttribute('y2', y);
+        return;
+      }
+      
+      if (!isDrawing || !currentElement) return;
+      updateElement(currentElement, startX, startY, x, y);
+    };
+
+    editorCanvas.onmouseup = () => {
+      if (isConnecting && currentTool === 'bpm-connector') {
+        // Connector completion handled in mousedown
+        return;
+      }
+      
+      if (isDrawing && currentElement) {
+        isDrawing = false;
+        
+        // Assign BPM IDs to new BPM elements
+        if (currentElement.getAttribute('data-bpm-type')) {
+          assignBpmId(currentElement);
+        }
+        
+        if (currentTool === 'text') {
+          // Make text editable
+          const textEl = currentElement;
+          textEl.onclick = () => {
+            const text = prompt('Enter text:', textEl.textContent || 'Text');
+            if (text !== null) {
+              textEl.textContent = text;
+              updatePropertiesPanel();
+            }
+          };
+        }
+        
+        // Make BPM labels editable
+        if (currentElement.getAttribute('data-bpm-label')) {
+          currentElement.onclick = () => {
+            const text = prompt('Enter label:', currentElement.textContent || '');
+            if (text !== null) {
+              currentElement.textContent = text;
+            }
+          };
+        }
+        
+        selectedElement = currentElement;
+        if (selectedElement) {
+          selectedElement.classList.add('selected-element');
+        }
+        updatePropertiesPanel();
+        currentElement = null;
+      }
+    };
+
+    function createElement(tool, x, y) {
+      let element;
+      
+      // BPM shapes
+      if (tool.startsWith('bpm-')) {
+        switch(tool) {
+          case 'bpm-start':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            element.setAttribute('cx', x);
+            element.setAttribute('cy', y);
+            element.setAttribute('r', '25');
+            element.setAttribute('fill', '#2196F3');
+            element.setAttribute('stroke', '#1976D2');
+            element.setAttribute('stroke-width', '3');
+            element.setAttribute('data-bpm-type', 'start');
+            break;
+          case 'bpm-end':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            element.setAttribute('cx', x);
+            element.setAttribute('cy', y);
+            element.setAttribute('r', '25');
+            element.setAttribute('fill', '#f44336');
+            element.setAttribute('stroke', '#d32f2f');
+            element.setAttribute('stroke-width', '3');
+            element.setAttribute('data-bpm-type', 'end');
+            break;
+          case 'bpm-process':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            element.setAttribute('x', x - 60);
+            element.setAttribute('y', y - 20);
+            element.setAttribute('width', '120');
+            element.setAttribute('height', '40');
+            element.setAttribute('rx', '5');
+            element.setAttribute('fill', '#4CAF50');
+            element.setAttribute('stroke', '#388E3C');
+            element.setAttribute('stroke-width', '2');
+            element.setAttribute('data-bpm-type', 'process');
+            // Add text
+            const processText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const processId = assignBpmId(element);
+            processText.setAttribute('x', x);
+            processText.setAttribute('y', y + 5);
+            processText.setAttribute('text-anchor', 'middle');
+            processText.setAttribute('fill', '#fff');
+            processText.setAttribute('font-size', '14');
+            processText.setAttribute('font-weight', 'bold');
+            processText.textContent = 'Process';
+            processText.setAttribute('data-bpm-label', 'true');
+            processText.setAttribute('data-parent-id', processId);
+            editorCanvas.appendChild(processText);
+            break;
+          case 'bpm-decision':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const size = 40;
+            const points = `${x},${y-size} ${x+size},${y} ${x},${y+size} ${x-size},${y}`;
+            element.setAttribute('points', points);
+            element.setAttribute('fill', '#FF9800');
+            element.setAttribute('stroke', '#F57C00');
+            element.setAttribute('stroke-width', '2');
+            element.setAttribute('data-bpm-type', 'decision');
+            // Add text
+            const decisionText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const decisionId = assignBpmId(element);
+            decisionText.setAttribute('x', x);
+            decisionText.setAttribute('y', y + 5);
+            decisionText.setAttribute('text-anchor', 'middle');
+            decisionText.setAttribute('fill', '#fff');
+            decisionText.setAttribute('font-size', '12');
+            decisionText.setAttribute('font-weight', 'bold');
+            decisionText.textContent = '?';
+            decisionText.setAttribute('data-bpm-label', 'true');
+            decisionText.setAttribute('data-parent-id', decisionId);
+            editorCanvas.appendChild(decisionText);
+            break;
+          case 'bpm-subprocess':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            element.setAttribute('x', x - 70);
+            element.setAttribute('y', y - 25);
+            element.setAttribute('width', '140');
+            element.setAttribute('height', '50');
+            element.setAttribute('rx', '8');
+            element.setAttribute('fill', '#9C27B0');
+            element.setAttribute('stroke', '#7B1FA2');
+            element.setAttribute('stroke-width', '2');
+            element.setAttribute('data-bpm-type', 'subprocess');
+            // Add text
+            const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const subId = assignBpmId(element);
+            subText.setAttribute('x', x);
+            subText.setAttribute('y', y + 5);
+            subText.setAttribute('text-anchor', 'middle');
+            subText.setAttribute('fill', '#fff');
+            subText.setAttribute('font-size', '14');
+            subText.setAttribute('font-weight', 'bold');
+            subText.textContent = 'Sub-Process';
+            subText.setAttribute('data-bpm-label', 'true');
+            subText.setAttribute('data-parent-id', subId);
+            editorCanvas.appendChild(subText);
+            break;
+          case 'bpm-data':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const dataWidth = 100;
+            const dataHeight = 40;
+            const skew = 15;
+            const dataPath = `M ${x-dataWidth/2},${y-dataHeight/2} L ${x-dataWidth/2+skew},${y+dataHeight/2} L ${x+dataWidth/2+skew},${y+dataHeight/2} L ${x+dataWidth/2},${y-dataHeight/2} Z`;
+            element.setAttribute('d', dataPath);
+            element.setAttribute('fill', '#00BCD4');
+            element.setAttribute('stroke', '#0097A7');
+            element.setAttribute('stroke-width', '2');
+            element.setAttribute('data-bpm-type', 'data');
+            // Add text
+            const dataText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const dataId = assignBpmId(element);
+            dataText.setAttribute('x', x);
+            dataText.setAttribute('y', y + 5);
+            dataText.setAttribute('text-anchor', 'middle');
+            dataText.setAttribute('fill', '#fff');
+            dataText.setAttribute('font-size', '12');
+            dataText.setAttribute('font-weight', 'bold');
+            dataText.textContent = 'Data';
+            dataText.setAttribute('data-bpm-label', 'true');
+            dataText.setAttribute('data-parent-id', dataId);
+            editorCanvas.appendChild(dataText);
+            break;
+          case 'bpm-connector':
+            // Connector is handled separately
+            return;
+        }
+      } else {
+        // Standard shapes
+        switch(tool) {
+          case 'text':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            element.setAttribute('x', x);
+            element.setAttribute('y', y);
+            element.setAttribute('fill', '#000000');
+            element.setAttribute('font-size', '24');
+            element.setAttribute('font-family', 'Arial');
+            element.textContent = 'Text';
+            break;
+          case 'rect':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            element.setAttribute('x', x);
+            element.setAttribute('y', y);
+            element.setAttribute('width', '0');
+            element.setAttribute('height', '0');
+            element.setAttribute('fill', '#4CAF50');
+            element.setAttribute('stroke', '#333');
+            element.setAttribute('stroke-width', '2');
+            break;
+          case 'circle':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            element.setAttribute('cx', x);
+            element.setAttribute('cy', y);
+            element.setAttribute('r', '0');
+            element.setAttribute('fill', '#4CAF50');
+            element.setAttribute('stroke', '#333');
+            element.setAttribute('stroke-width', '2');
+            break;
+          case 'ellipse':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            element.setAttribute('cx', x);
+            element.setAttribute('cy', y);
+            element.setAttribute('rx', '0');
+            element.setAttribute('ry', '0');
+            element.setAttribute('fill', '#4CAF50');
+            element.setAttribute('stroke', '#333');
+            element.setAttribute('stroke-width', '2');
+            break;
+          case 'line':
+            element = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            element.setAttribute('x1', x);
+            element.setAttribute('y1', y);
+            element.setAttribute('x2', x);
+            element.setAttribute('y2', y);
+            element.setAttribute('stroke', '#333');
+            element.setAttribute('stroke-width', '3');
+            break;
+        }
+      }
+      
+      if (element) {
+        editorCanvas.appendChild(element);
+        currentElement = element;
+      }
+    }
+
+    function updateElement(element, x1, y1, x2, y2) {
+      const tag = element.tagName;
+      switch(tag) {
+        case 'rect':
+          const rectX = Math.min(x1, x2);
+          const rectY = Math.min(y1, y2);
+          element.setAttribute('x', rectX);
+          element.setAttribute('y', rectY);
+          element.setAttribute('width', Math.abs(x2 - x1));
+          element.setAttribute('height', Math.abs(y2 - y1));
+          break;
+        case 'circle':
+          const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+          element.setAttribute('r', radius);
+          break;
+        case 'ellipse':
+          const rx = Math.abs(x2 - x1);
+          const ry = Math.abs(y2 - y1);
+          element.setAttribute('rx', rx);
+          element.setAttribute('ry', ry);
+          break;
+        case 'line':
+          element.setAttribute('x2', x2);
+          element.setAttribute('y2', y2);
+          break;
+      }
+    }
+
+    function updatePropertiesPanel() {
+      if (!selectedElement || selectedElement.tagName === 'svg' || 
+          (selectedElement.tagName === 'rect' && selectedElement.getAttribute('fill') === '#ffffff')) {
+        propertiesPanel.innerHTML = '<p style="color: #888; font-size: 0.85rem;">Select an element to edit properties</p>';
+        return;
+      }
+
+      const tag = selectedElement.tagName;
+      let html = '';
+
+      // Common properties
+      if (tag === 'text') {
+        html += `
+          <div class="property-group">
+            <label>Text Content</label>
+            <input type="text" id="prop-text" value="${selectedElement.textContent || ''}" />
+          </div>
+          <div class="property-group">
+            <label>Font Size</label>
+            <input type="number" id="prop-font-size" value="${selectedElement.getAttribute('font-size') || '24'}" />
+          </div>
+          <div class="property-group">
+            <label>Font Family</label>
+            <input type="text" id="prop-font-family" value="${selectedElement.getAttribute('font-family') || 'Arial'}" />
+          </div>
+          <div class="property-row">
+            <div class="property-group">
+              <label>X</label>
+              <input type="number" id="prop-x" value="${selectedElement.getAttribute('x') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Y</label>
+              <input type="number" id="prop-y" value="${selectedElement.getAttribute('y') || '0'}" />
+            </div>
+          </div>
+        `;
+      } else if (tag === 'rect') {
+        html += `
+          <div class="property-row">
+            <div class="property-group">
+              <label>X</label>
+              <input type="number" id="prop-x" value="${selectedElement.getAttribute('x') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Y</label>
+              <input type="number" id="prop-y" value="${selectedElement.getAttribute('y') || '0'}" />
+            </div>
+          </div>
+          <div class="property-row">
+            <div class="property-group">
+              <label>Width</label>
+              <input type="number" id="prop-width" value="${selectedElement.getAttribute('width') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Height</label>
+              <input type="number" id="prop-height" value="${selectedElement.getAttribute('height') || '0'}" />
+            </div>
+          </div>
+        `;
+      } else if (tag === 'circle') {
+        html += `
+          <div class="property-row">
+            <div class="property-group">
+              <label>Center X</label>
+              <input type="number" id="prop-cx" value="${selectedElement.getAttribute('cx') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Center Y</label>
+              <input type="number" id="prop-cy" value="${selectedElement.getAttribute('cy') || '0'}" />
+            </div>
+          </div>
+          <div class="property-group">
+            <label>Radius</label>
+            <input type="number" id="prop-r" value="${selectedElement.getAttribute('r') || '0'}" />
+          </div>
+        `;
+      } else if (tag === 'ellipse') {
+        html += `
+          <div class="property-row">
+            <div class="property-group">
+              <label>Center X</label>
+              <input type="number" id="prop-cx" value="${selectedElement.getAttribute('cx') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Center Y</label>
+              <input type="number" id="prop-cy" value="${selectedElement.getAttribute('cy') || '0'}" />
+            </div>
+          </div>
+          <div class="property-row">
+            <div class="property-group">
+              <label>Radius X</label>
+              <input type="number" id="prop-rx" value="${selectedElement.getAttribute('rx') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Radius Y</label>
+              <input type="number" id="prop-ry" value="${selectedElement.getAttribute('ry') || '0'}" />
+            </div>
+          </div>
+        `;
+      } else if (tag === 'line') {
+        html += `
+          <div class="property-row">
+            <div class="property-group">
+              <label>X1</label>
+              <input type="number" id="prop-x1" value="${selectedElement.getAttribute('x1') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Y1</label>
+              <input type="number" id="prop-y1" value="${selectedElement.getAttribute('y1') || '0'}" />
+            </div>
+          </div>
+          <div class="property-row">
+            <div class="property-group">
+              <label>X2</label>
+              <input type="number" id="prop-x2" value="${selectedElement.getAttribute('x2') || '0'}" />
+            </div>
+            <div class="property-group">
+              <label>Y2</label>
+              <input type="number" id="prop-y2" value="${selectedElement.getAttribute('y2') || '0'}" />
+            </div>
+          </div>
+        `;
+      }
+
+      // Common styling properties
+      html += `
+        <div class="property-group">
+          <label>Fill Color</label>
+          <input type="color" id="prop-fill" value="${selectedElement.getAttribute('fill') || '#000000'}" />
+        </div>
+        <div class="property-group">
+          <label>Stroke Color</label>
+          <input type="color" id="prop-stroke" value="${selectedElement.getAttribute('stroke') || '#000000'}" />
+        </div>
+        <div class="property-group">
+          <label>Stroke Width</label>
+          <input type="number" id="prop-stroke-width" value="${selectedElement.getAttribute('stroke-width') || '0'}" step="0.5" />
+        </div>
+        <div class="property-group">
+          <label>Animation</label>
+          <input type="checkbox" id="prop-animate" ${selectedElement.getAttribute('data-animate') === 'true' ? 'checked' : ''} />
+        </div>
+      `;
+
+      propertiesPanel.innerHTML = html;
+
+      // Attach event listeners
+      attachPropertyListeners();
+    }
+
+    function attachPropertyListeners() {
+      const tag = selectedElement.tagName;
+      
+      if (tag === 'text') {
+        const textInput = document.getElementById('prop-text');
+        const fontSizeInput = document.getElementById('prop-font-size');
+        const fontFamilyInput = document.getElementById('prop-font-family');
+        const xInput = document.getElementById('prop-x');
+        const yInput = document.getElementById('prop-y');
+
+        if (textInput) textInput.oninput = () => selectedElement.textContent = textInput.value;
+        if (fontSizeInput) fontSizeInput.oninput = () => selectedElement.setAttribute('font-size', fontSizeInput.value);
+        if (fontFamilyInput) fontFamilyInput.oninput = () => selectedElement.setAttribute('font-family', fontFamilyInput.value);
+        if (xInput) xInput.oninput = () => selectedElement.setAttribute('x', xInput.value);
+        if (yInput) yInput.oninput = () => selectedElement.setAttribute('y', yInput.value);
+      } else if (tag === 'rect') {
+        const xInput = document.getElementById('prop-x');
+        const yInput = document.getElementById('prop-y');
+        const widthInput = document.getElementById('prop-width');
+        const heightInput = document.getElementById('prop-height');
+
+        if (xInput) xInput.oninput = () => selectedElement.setAttribute('x', xInput.value);
+        if (yInput) yInput.oninput = () => selectedElement.setAttribute('y', yInput.value);
+        if (widthInput) widthInput.oninput = () => selectedElement.setAttribute('width', widthInput.value);
+        if (heightInput) heightInput.oninput = () => selectedElement.setAttribute('height', heightInput.value);
+      } else if (tag === 'circle') {
+        const cxInput = document.getElementById('prop-cx');
+        const cyInput = document.getElementById('prop-cy');
+        const rInput = document.getElementById('prop-r');
+
+        if (cxInput) cxInput.oninput = () => selectedElement.setAttribute('cx', cxInput.value);
+        if (cyInput) cyInput.oninput = () => selectedElement.setAttribute('cy', cyInput.value);
+        if (rInput) rInput.oninput = () => selectedElement.setAttribute('r', rInput.value);
+      } else if (tag === 'ellipse') {
+        const cxInput = document.getElementById('prop-cx');
+        const cyInput = document.getElementById('prop-cy');
+        const rxInput = document.getElementById('prop-rx');
+        const ryInput = document.getElementById('prop-ry');
+
+        if (cxInput) cxInput.oninput = () => selectedElement.setAttribute('cx', cxInput.value);
+        if (cyInput) cyInput.oninput = () => selectedElement.setAttribute('cy', cyInput.value);
+        if (rxInput) rxInput.oninput = () => selectedElement.setAttribute('rx', rxInput.value);
+        if (ryInput) ryInput.oninput = () => selectedElement.setAttribute('ry', ryInput.value);
+      } else if (tag === 'line') {
+        const x1Input = document.getElementById('prop-x1');
+        const y1Input = document.getElementById('prop-y1');
+        const x2Input = document.getElementById('prop-x2');
+        const y2Input = document.getElementById('prop-y2');
+
+        if (x1Input) x1Input.oninput = () => selectedElement.setAttribute('x1', x1Input.value);
+        if (y1Input) y1Input.oninput = () => selectedElement.setAttribute('y1', y1Input.value);
+        if (x2Input) x2Input.oninput = () => selectedElement.setAttribute('x2', x2Input.value);
+        if (y2Input) y2Input.oninput = () => selectedElement.setAttribute('y2', y2Input.value);
+      }
+
+      // Common properties
+      const fillInput = document.getElementById('prop-fill');
+      const strokeInput = document.getElementById('prop-stroke');
+      const strokeWidthInput = document.getElementById('prop-stroke-width');
+      const animateInput = document.getElementById('prop-animate');
+
+      if (fillInput) fillInput.oninput = () => selectedElement.setAttribute('fill', fillInput.value);
+      if (strokeInput) strokeInput.oninput = () => selectedElement.setAttribute('stroke', strokeInput.value);
+      if (strokeWidthInput) strokeWidthInput.oninput = () => selectedElement.setAttribute('stroke-width', strokeWidthInput.value);
+      if (animateInput) animateInput.onchange = () => {
+        if (animateInput.checked) {
+          selectedElement.setAttribute('data-animate', 'true');
+        } else {
+          selectedElement.removeAttribute('data-animate');
+        }
+      };
+    }
+
+    function deleteSelected() {
+      if (selectedElement && selectedElement.tagName !== 'svg' && 
+          !(selectedElement.tagName === 'rect' && selectedElement.getAttribute('fill') === '#ffffff')) {
+        // If deleting a BPM element, also delete its label and connectors
+        if (selectedElement.getAttribute('data-bpm-type')) {
+          const bpmId = selectedElement.getAttribute('data-bpm-id');
+          // Delete label
+          const label = editorCanvas.querySelector(`text[data-bpm-label][data-parent-id="${bpmId}"]`);
+          if (label) label.remove();
+          // Delete connectors
+          editorCanvas.querySelectorAll(`line[data-connector][data-from="${bpmId}"], line[data-connector][data-to="${bpmId}"]`).forEach(conn => conn.remove());
+        }
+        selectedElement.remove();
+        selectedElement = null;
+        updatePropertiesPanel();
+      }
+    }
+    
+    deleteBtn.onclick = deleteSelected;
+    deleteBtnBpm.onclick = deleteSelected;
+
+    function toggleAnimate() {
+      if (selectedElement && selectedElement.tagName !== 'svg' && 
+          !(selectedElement.tagName === 'rect' && selectedElement.getAttribute('fill') === '#ffffff')) {
+        const hasAnimate = selectedElement.getAttribute('data-animate') === 'true';
+        if (hasAnimate) {
+          selectedElement.removeAttribute('data-animate');
+        } else {
+          selectedElement.setAttribute('data-animate', 'true');
+        }
+        updatePropertiesPanel();
+      }
+    }
+    
+    animateToggleBtn.onclick = toggleAnimate;
+    animateToggleBtnBpm.onclick = toggleAnimate;
+
+    saveEditorBtn.onclick = () => {
+      const svgContent = editorCanvas.outerHTML;
+      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      
+      if (editingSlideIndex !== null) {
+        // Replace existing slide
+        if (slides[editingSlideIndex].startsWith('blob:')) {
+          URL.revokeObjectURL(slides[editingSlideIndex]);
+        }
+        slides[editingSlideIndex] = url;
+        editorModal.classList.remove('active');
+        resetEditor();
+        loadSlide(editingSlideIndex);
+        editingSlideIndex = null;
+      } else {
+        // Add new slide
+        slides.push(url);
+        editorModal.classList.remove('active');
+        resetEditor();
+        loadSlide(slides.length - 1);
+      }
+    };
+
+    async function loadSlideIntoEditor(slideUrl) {
+      try {
+        let svgContent = '';
+        
+        if (slideUrl.startsWith('blob:')) {
+          // Load from blob URL
+          const response = await fetch(slideUrl);
+          svgContent = await response.text();
+        } else {
+          // Load from file path
+          const response = await fetch(slideUrl);
+          svgContent = await response.text();
+        }
+        
+        // Parse SVG and load into editor
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+        const svgElement = svgDoc.querySelector('svg');
+        
+        if (!svgElement) {
+          console.error('Invalid SVG content');
+          initializeEditor();
+          return;
+        }
+        
+        // Check if it's a BPM slide
+        const hasBpmElements = svgElement.querySelector('[data-bpm-type]');
+        
+        // Set up editor canvas
+        editorCanvas.innerHTML = '';
+        
+        // Copy defs if they exist
+        const defs = svgElement.querySelector('defs');
+        if (defs) {
+          const defsClone = defs.cloneNode(true);
+          editorCanvas.appendChild(defsClone);
+        } else {
+          // Add default arrowhead marker
+          const defaultDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+          const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+          marker.setAttribute('id', 'arrowhead');
+          marker.setAttribute('markerWidth', '10');
+          marker.setAttribute('markerHeight', '10');
+          marker.setAttribute('refX', '9');
+          marker.setAttribute('refY', '3');
+          marker.setAttribute('orient', 'auto');
+          const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          polygon.setAttribute('points', '0 0, 10 3, 0 6');
+          polygon.setAttribute('fill', '#333');
+          marker.appendChild(polygon);
+          defaultDefs.appendChild(marker);
+          editorCanvas.appendChild(defaultDefs);
+        }
+        
+        // Copy all child elements except defs
+        Array.from(svgElement.children).forEach(child => {
+          if (child.tagName !== 'defs') {
+            const clone = child.cloneNode(true);
+            editorCanvas.appendChild(clone);
+          }
+        });
+        
+        // Set viewBox if present
+        if (svgElement.getAttribute('viewBox')) {
+          editorCanvas.setAttribute('viewBox', svgElement.getAttribute('viewBox'));
+        } else {
+          editorCanvas.setAttribute('viewBox', '0 0 960 720');
+        }
+        
+        // Switch to BPM mode if BPM elements detected
+        if (hasBpmElements) {
+          currentMode = 'bpm';
+          document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-mode="bpm"]').classList.add('active');
+          standardToolbar.style.display = 'none';
+          bpmToolbar.style.display = 'flex';
+          bpmPalette.classList.add('active');
+        } else {
+          currentMode = 'standard';
+          document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-mode="standard"]').classList.add('active');
+          standardToolbar.style.display = 'flex';
+          bpmToolbar.style.display = 'none';
+          bpmPalette.classList.remove('active');
+        }
+        
+        selectedElement = null;
+        currentTool = 'select';
+        isConnecting = false;
+        connectionStart = null;
+        connectionStartElement = null;
+        document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+        document.querySelector('[data-tool="select"]').classList.add('active');
+        updatePropertiesPanel();
+        
+        // Re-attach event listeners to editable elements
+        editorCanvas.querySelectorAll('[data-bpm-label]').forEach(label => {
+          label.onclick = () => {
+            const text = prompt('Enter label:', label.textContent || '');
+            if (text !== null) {
+              label.textContent = text;
+            }
+          };
+        });
+        
+      } catch (error) {
+        console.error('Error loading slide:', error);
+        initializeEditor();
+      }
+    }
+
+    function initializeEditor() {
+      // Start with a blank slide
+      editorCanvas.innerHTML = `
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <polygon points="0 0, 10 3, 0 6" fill="#333" />
+          </marker>
+        </defs>
+        <rect width="960" height="720" fill="#ffffff"/>
+      `;
+      editorCanvas.setAttribute('viewBox', '0 0 960 720');
+      selectedElement = null;
+      currentTool = 'select';
+      currentMode = 'standard';
+      isConnecting = false;
+      connectionStart = null;
+      connectionStartElement = null;
+      document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-tool="select"]').classList.add('active');
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-mode="standard"]').classList.add('active');
+      standardToolbar.style.display = 'flex';
+      bpmToolbar.style.display = 'none';
+      bpmPalette.classList.remove('active');
+      updatePropertiesPanel();
+    }
+
+    function resetEditor() {
+      if (selectedElement) {
+        selectedElement.classList.remove('selected-element');
+      }
+      selectedElement = null;
+      isDrawing = false;
+      currentElement = null;
+      updatePropertiesPanel();
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (!editorModal.classList.contains('active')) return;
+      
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        deleteBtn.click();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        document.querySelector('[data-tool="select"]').click();
+      } else if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        document.querySelector('[data-tool="text"]').click();
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        document.querySelector('[data-tool="rect"]').click();
+      } else if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        document.querySelector('[data-tool="circle"]').click();
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        document.querySelector('[data-tool="line"]').click();
+      } else if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        document.querySelector('[data-tool="ellipse"]').click();
+      }
+    });
+  </script>
+</body>
+</html>
+

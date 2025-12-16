@@ -1,0 +1,275 @@
+A practical way to do this is: treat each slide as an SVG document, then build an HTML/JS “player” that loads those SVGs, exposes Play/Pause, and drives animations via CSS/JS or SMIL.[1][2]
+
+## High-level design
+
+- Format: SVG per slide (exported from TikZ/Asymptote or authored directly).[3][1]
+- Hosting: Static site (GitHub Pages / S3 / any HTTP server).[4]
+- Player: Single-page HTML app that:
+  - Loads a list of slide SVGs.
+  - Shows one at a time with Next/Prev + keyboard.
+  - Runs animations when a slide becomes active (and can reset them).[4][3]
+
+## File layout for deployment
+
+Example static structure:
+
+- `/index.html` – slide player  
+- `/slides/slide1.svg`  
+- `/slides/slide2.svg`  
+- `/slides/slide3.svg`  
+
+Host the folder on any static web host (GitHub Pages, Netlify, CloudFront, etc.).[4]
+
+## Minimal animated web slide player (copy–paste)
+
+This example uses:
+
+- `<object>` to load external SVG slides.  
+- `data-animate="true"` on SVG elements to mark them as animated.  
+- CSS animation (fade/scale) triggered by adding a class from JS.[5][1]
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SVG Slide Player</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #111;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .player {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+    }
+
+    .stage object {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #111;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #222;
+      border-top: 1px solid #333;
+    }
+
+    button {
+      padding: 0.35rem 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #333;
+      color: #eee;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    /* Simple fade+scale animation for elements in the SVG */
+    .svg-animate-in {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: fadeInScale 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <div class="stage">
+      <!-- SVG slides injected here -->
+      <object id="slideFrame" type="image/svg+xml"></object>
+    </div>
+    <div class="controls">
+      <button id="prevBtn">Prev (←)</button>
+      <button id="playBtn">Play</button>
+      <button id="pauseBtn" disabled>Pause</button>
+      <button id="nextBtn">Next (→)</button>
+      <span id="status" style="margin-left:1rem;font-size:0.85rem;opacity:0.7;"></span>
+    </div>
+  </div>
+
+  <script>
+    // Define your slide list
+    const slides = [
+      'slides/slide1.svg',
+      'slides/slide2.svg',
+      'slides/slide3.svg'
+    ];
+
+    let current = 0;
+    let autoPlayTimer = null;
+    const autoPlayDelay = 6000; // 6s per slide
+
+    const frame = document.getElementById('slideFrame');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const statusEl = document.getElementById('status');
+
+    function loadSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      current = index;
+      frame.data = slides[current];
+      statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+    }
+
+    function onSlideLoaded() {
+      const svgDoc = frame.contentDocument;
+      if (!svgDoc) return;
+
+      // Find elements you want to animate inside the SVG
+      // Convention: anything with data-animate="true"
+      const animElems = svgDoc.querySelectorAll('[data-animate="true"]');
+
+      // Reset class to re-trigger animation
+      animElems.forEach(el => {
+        el.classList.remove('svg-animate-in');
+        // Force reflow so animation restarts
+        void el.getBBox();
+        el.classList.add('svg-animate-in');
+      });
+    }
+
+    frame.addEventListener('load', onSlideLoaded);
+
+    function nextSlide(loop = true) {
+      let next = current + 1;
+      if (next >= slides.length) next = loop ? 0 : slides.length - 1;
+      loadSlide(next);
+    }
+
+    function prevSlide() {
+      let prev = current - 1;
+      if (prev < 0) prev = slides.length - 1;
+      loadSlide(prev);
+    }
+
+    prevBtn.onclick = () => {
+      stopAutoPlay();
+      prevSlide();
+    };
+    nextBtn.onclick = () => {
+      stopAutoPlay();
+      nextSlide(false);
+    };
+
+    function startAutoPlay() {
+      if (autoPlayTimer) return;
+      playBtn.disabled = true;
+      pauseBtn.disabled = false;
+      statusEl.textContent = `Auto-play (every ${autoPlayDelay / 1000}s) — Slide ${current + 1} / ${slides.length}`;
+      autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
+    }
+
+    function stopAutoPlay() {
+      if (!autoPlayTimer) return;
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      playBtn.disabled = false;
+      pauseBtn.disabled = true;
+      statusEl.textContent = `Manual mode — Slide ${current + 1} / ${slides.length}`;
+    }
+
+    playBtn.onclick = startAutoPlay;
+    pauseBtn.onclick = stopAutoPlay;
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        stopAutoPlay();
+        nextSlide(false);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        stopAutoPlay();
+        prevSlide();
+      }
+    });
+
+    // Initialize
+    loadSlide(current);
+  </script>
+</body>
+</html>
+```
+
+This is fully static and web-hostable; drop it in a folder, put SVGs into `/slides/`, and serve.[4]
+
+## Making your SVG slides animatable
+
+Inside each `slideN.svg`, mark any element you want to animate when the slide appears:
+
+```svg
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#111"/>
+  <text x="50" y="100" fill="#fff" font-size="32"
+        data-animate="true">
+    Hello, animated world
+  </text>
+  <circle cx="200" cy="300" r="40" fill="orange"
+          data-animate="true" />
+</svg>
+```
+
+On each slide load, the player attaches `svg-animate-in`, which runs the CSS `@keyframes` animation.[1][5]
+
+## Using TikZ/Asymptote as source
+
+- Author slides in TikZ or Asymptote.[6][7]
+- Compile to SVG in your build pipeline (e.g., `pdflatex` + `dvisvgm` or `pdftocairo -svg`).  
+- The generated SVGs go into `/slides/`, nothing in the player changes.[3]
+
+If you share a preferred vector/code format (pure SVG vs TikZ→SVG vs Asymptote→SVG), a variant tailored to that toolchain and a small build script (Makefile or Node script) can be provided.
+
+[1](https://www.w3schools.com/graphics/svg_animation.asp)
+[2](https://css-tricks.com/guide-svg-animations-smil/)
+[3](https://paulhammant.com/2016/07/02/svg-slides-and-tweening-in-javascript/)
+[4](https://codyhouse.co/gem/animated-svg-image-slider)
+[5](https://blog.logrocket.com/how-to-animate-svg-css-tutorial-examples/)
+[6](https://en.wikipedia.org/wiki/Asymptote_(vector_graphics_language))
+[7](https://tikz.dev)
+[8](https://tympanus.net/codrops/2017/11/15/animated-svg-frame-slideshow/)
+[9](https://colorlib.com/wp/svg-animations-examples/)
+[10](https://www.sliderrevolution.com/design/svg-animation-examples/)
+[11](https://designmodo.com/svg-animation/)
+[12](https://www.youtube.com/watch?v=cMVUCewoSWY)
+[13](https://www.youtube.com/watch?v=FVd5arHq0Zk)
+[14](https://stackoverflow.com/questions/75274256/optimizing-smooth-tween-between-svg-paths-in-javascript-react-native)
+[15](https://onaircode.com/best-animated-svg-slider/)
+[16](https://stackoverflow.com/questions/50142097/how-to-trigger-an-svg-animation-with-javascript-no-jquery)
+[17](https://brettsnaidero.github.io/svg-animation-slides/)
+[18](https://www.svgator.com)
+[19](https://github.com/colinmeinke/svg-tween)
+[20](https://www.youtube.com/watch?v=eSpHvESNcZQ)
+[21](https://svgjs.dev)
+[22](https://svgmaker.io/blogs/svg-animation)

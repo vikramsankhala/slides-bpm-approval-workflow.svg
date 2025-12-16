@@ -1,0 +1,64 @@
+<svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="720" fill="#ffffff"/>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#333" />
+    </marker>
+  </defs>
+  
+  <!-- Start Event -->
+  <circle cx="480" cy="80" r="25" fill="#2196F3" stroke="#1976D2" stroke-width="3" data-bpm-type="start" data-bpm-id="bpm-start-1" data-animate="true"/>
+  
+  <!-- Process: Receive Order -->
+  <rect x="430" y="140" width="100" height="40" rx="5" fill="#4CAF50" stroke="#388E3C" stroke-width="2" data-bpm-type="process" data-bpm-id="bpm-process-1" data-animate="true"/>
+  <text x="480" y="165" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-process-1" data-animate="true">Receive Order</text>
+  
+  <!-- Decision: Valid? -->
+  <polygon points="480,210 520,240 480,270 440,240" fill="#FF9800" stroke="#F57C00" stroke-width="2" data-bpm-type="decision" data-bpm-id="bpm-decision-1" data-animate="true"/>
+  <text x="480" y="245" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-decision-1" data-animate="true">Valid?</text>
+  
+  <!-- Process: Process Payment -->
+  <rect x="430" y="300" width="100" height="40" rx="5" fill="#4CAF50" stroke="#388E3C" stroke-width="2" data-bpm-type="process" data-bpm-id="bpm-process-2" data-animate="true"/>
+  <text x="480" y="325" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-process-2" data-animate="true">Process Payment</text>
+  
+  <!-- Decision: Payment OK? -->
+  <polygon points="480,370 520,400 480,430 440,400" fill="#FF9800" stroke="#F57C00" stroke-width="2" data-bpm-type="decision" data-bpm-id="bpm-decision-2" data-animate="true"/>
+  <text x="480" y="405" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-decision-2" data-animate="true">Payment OK?</text>
+  
+  <!-- Process: Fulfill Order -->
+  <rect x="430" y="460" width="100" height="40" rx="5" fill="#4CAF50" stroke="#388E3C" stroke-width="2" data-bpm-type="process" data-bpm-id="bpm-process-3" data-animate="true"/>
+  <text x="480" y="485" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-process-3" data-animate="true">Fulfill Order</text>
+  
+  <!-- Process: Send Confirmation -->
+  <rect x="430" y="540" width="100" height="40" rx="5" fill="#4CAF50" stroke="#388E3C" stroke-width="2" data-bpm-type="process" data-bpm-id="bpm-process-4" data-animate="true"/>
+  <text x="480" y="565" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-process-4" data-animate="true">Send Confirmation</text>
+  
+  <!-- End Event -->
+  <circle cx="480" cy="620" r="25" fill="#f44336" stroke="#d32f2f" stroke-width="3" data-bpm-type="end" data-bpm-id="bpm-end-1" data-animate="true"/>
+  
+  <!-- Reject Process -->
+  <rect x="650" y="300" width="100" height="40" rx="5" fill="#4CAF50" stroke="#388E3C" stroke-width="2" data-bpm-type="process" data-bpm-id="bpm-process-reject" data-animate="true"/>
+  <text x="700" y="325" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" data-bpm-label="true" data-parent-id="bpm-process-reject" data-animate="true">Reject Order</text>
+  
+  <!-- Connectors -->
+  <line x1="480" y1="105" x2="480" y2="140" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-start-1" data-to="bpm-process-1" data-animate="true"/>
+  <line x1="480" y1="180" x2="480" y2="210" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-process-1" data-to="bpm-decision-1" data-animate="true"/>
+  <line x1="480" y1="270" x2="480" y2="300" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-decision-1" data-to="bpm-process-2" data-animate="true"/>
+  <line x1="480" y1="340" x2="480" y2="370" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-process-2" data-to="bpm-decision-2" data-animate="true"/>
+  <line x1="480" y1="430" x2="480" y2="460" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-decision-2" data-to="bpm-process-3" data-animate="true"/>
+  <line x1="480" y1="500" x2="480" y2="540" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-process-3" data-to="bpm-process-4" data-animate="true"/>
+  <line x1="480" y1="580" x2="480" y2="595" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-process-4" data-to="bpm-end-1" data-animate="true"/>
+  <line x1="520" y1="400" x2="650" y2="320" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-decision-2" data-to="bpm-process-reject" data-animate="true"/>
+  <line x1="480" y1="240" x2="480" y2="240" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" data-connector="true" data-from="bpm-decision-1" data-to="bpm-process-reject" data-animate="true"/>
+  
+  <!-- Labels -->
+  <text x="490" y="235" fill="#333" font-size="12" data-animate="true">Yes</text>
+  <text x="490" y="415" fill="#333" font-size="12" data-animate="true">Yes</text>
+  <text x="570" y="360" fill="#333" font-size="12" data-animate="true">No</text>
+  <text x="490" y="255" fill="#333" font-size="12" data-animate="true">No</text>
+  
+  <!-- Title -->
+  <text x="480" y="40" text-anchor="middle" fill="#333" font-size="28" font-weight="bold" data-animate="true">Order Processing Workflow</text>
+</svg>
+

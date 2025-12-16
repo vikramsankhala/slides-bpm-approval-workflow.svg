@@ -1,0 +1,18 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#111"/>
+  <text x="400" y="200" fill="#fff" font-size="48" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    Welcome to SVG Slides
+  </text>
+  <text x="400" y="280" fill="#aaa" font-size="24" text-anchor="middle"
+        data-animate="true">
+    Animated slide player
+  </text>
+  <circle cx="400" cy="400" r="60" fill="#4CAF50"
+          data-animate="true" />
+  <text x="400" y="410" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    SVG
+  </text>
+</svg>
+

@@ -1,0 +1,30 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#1a1a2e"/>
+  <text x="400" y="150" fill="#fff" font-size="42" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    Features
+  </text>
+  <rect x="150" y="220" width="120" height="120" fill="#FF6B6B" rx="10"
+        data-animate="true" />
+  <text x="210" y="290" fill="#fff" font-size="18" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    Play/Pause
+  </text>
+  <rect x="340" y="220" width="120" height="120" fill="#4ECDC4" rx="10"
+        data-animate="true" />
+  <text x="400" y="290" fill="#fff" font-size="18" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    Keyboard
+  </text>
+  <rect x="530" y="220" width="120" height="120" fill="#FFE66D" rx="10"
+        data-animate="true" />
+  <text x="590" y="290" fill="#111" font-size="18" text-anchor="middle" font-weight="bold"
+        data-animate="true">
+    Animations
+  </text>
+  <text x="400" y="420" fill="#888" font-size="20" text-anchor="middle"
+        data-animate="true">
+    Use arrow keys or spacebar to navigate
+  </text>
+</svg>
+

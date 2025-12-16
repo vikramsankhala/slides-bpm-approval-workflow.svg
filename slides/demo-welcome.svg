@@ -1,0 +1,17 @@
+<svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="720" fill="#1a1a2e"/>
+  <text x="480" y="250" fill="#fff" font-size="56" text-anchor="middle" font-weight="bold" data-animate="true">
+    SVG Slide Player
+  </text>
+  <text x="480" y="320" fill="#4ECDC4" font-size="32" text-anchor="middle" data-animate="true">
+    Demo Presentation
+  </text>
+  <text x="480" y="400" fill="#888" font-size="20" text-anchor="middle" data-animate="true">
+    Create, edit, and present beautiful SVG slides
+  </text>
+  <circle cx="480" cy="520" r="50" fill="#4ECDC4" data-animate="true"/>
+  <text x="480" y="530" fill="#1a1a2e" font-size="24" text-anchor="middle" font-weight="bold" data-animate="true">
+    SVG
+  </text>
+</svg>
+

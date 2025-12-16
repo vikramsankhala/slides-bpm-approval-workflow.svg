@@ -1,0 +1,53 @@
+<svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="720" fill="#0f0f23"/>
+  <text x="480" y="100" fill="#fff" font-size="48" text-anchor="middle" font-weight="bold" data-animate="true">
+    Key Features
+  </text>
+  
+  <rect x="100" y="180" width="200" height="120" fill="#FF6B6B" rx="10" data-animate="true"/>
+  <text x="200" y="250" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    PowerPoint
+  </text>
+  <text x="200" y="275" fill="#fff" font-size="16" text-anchor="middle" data-animate="true">
+    Converter
+  </text>
+  
+  <rect x="380" y="180" width="200" height="120" fill="#4ECDC4" rx="10" data-animate="true"/>
+  <text x="480" y="250" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    Visual
+  </text>
+  <text x="480" y="275" fill="#fff" font-size="16" text-anchor="middle" data-animate="true">
+    Editor
+  </text>
+  
+  <rect x="660" y="180" width="200" height="120" fill="#FFE66D" rx="10" data-animate="true"/>
+  <text x="760" y="250" fill="#1a1a2e" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    BPM
+  </text>
+  <text x="760" y="275" fill="#1a1a2e" font-size="16" text-anchor="middle" data-animate="true">
+    Modelling
+  </text>
+  
+  <rect x="100" y="340" width="200" height="120" fill="#9B59B6" rx="10" data-animate="true"/>
+  <text x="200" y="410" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    Animations
+  </text>
+  
+  <rect x="380" y="340" width="200" height="120" fill="#3498DB" rx="10" data-animate="true"/>
+  <text x="480" y="410" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    Auto-Play
+  </text>
+  
+  <rect x="660" y="340" width="200" height="120" fill="#E74C3C" rx="10" data-animate="true"/>
+  <text x="760" y="410" fill="#fff" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">
+    Keyboard
+  </text>
+  <text x="760" y="435" fill="#fff" font-size="16" text-anchor="middle" data-animate="true">
+    Navigation
+  </text>
+  
+  <text x="480" y="550" fill="#666" font-size="18" text-anchor="middle" data-animate="true">
+    All features work seamlessly together
+  </text>
+</svg>
+
