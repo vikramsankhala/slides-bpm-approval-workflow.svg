@@ -735,13 +735,31 @@
     const aiProgressText = document.getElementById('aiProgressText');
     
     // OpenAI API Configuration (loaded from config.js)
-    const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
-    const OPENAI_API_URL = CONFIG.OPENAI_API_URL;
-    const OPENAI_MODEL = CONFIG.OPENAI_MODEL || 'gpt-4';
+    let OPENAI_API_KEY, OPENAI_API_URL, OPENAI_MODEL;
     
-    aiGenerateBtn.onclick = () => {
-      aiModal.classList.add('active');
-    };
+    // Check if CONFIG is available
+    if (typeof CONFIG !== 'undefined') {
+      OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
+      OPENAI_API_URL = CONFIG.OPENAI_API_URL;
+      OPENAI_MODEL = CONFIG.OPENAI_MODEL || 'gpt-4';
+    } else {
+      console.error('CONFIG not found. Make sure config.js is loaded.');
+      OPENAI_API_KEY = '';
+      OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+      OPENAI_MODEL = 'gpt-4';
+    }
+    
+    if (!aiGenerateBtn) {
+      console.error('AI Generate button not found');
+    } else {
+      aiGenerateBtn.onclick = () => {
+        if (!aiModal) {
+          console.error('AI Modal not found');
+          return;
+        }
+        aiModal.classList.add('active');
+      };
+    }
     
     closeAiBtn.onclick = () => {
       aiModal.classList.remove('active');
@@ -840,7 +858,7 @@
         aiProgressFill.style.background = '#f44336';
         alert(`AI Generation failed: ${error.message}`);
       } finally {
-        generateAiBtn.disabled = false;
+        if (generateAiBtn) generateAiBtn.disabled = false;
       }
     };
     
@@ -1109,14 +1127,20 @@ Make it visually appealing with appropriate graphics, text, and layout.`;
     // ===== PowerPoint to SVG Converter =====
     const converterModal = document.getElementById('converterModal');
     const converterBtn = document.getElementById('converterBtn');
+    
+    if (!converterBtn) {
+      console.error('Converter button not found');
+    } else if (!converterModal) {
+      console.error('Converter modal not found');
+    } else {
+      converterBtn.onclick = () => converterModal.classList.add('active');
+    }
     const closeConverterBtn = document.getElementById('closeConverterBtn');
     const pptxFileInput = document.getElementById('pptxFileInput');
     const fileInputWrapper = document.getElementById('fileInputWrapper');
     const converterProgress = document.getElementById('converterProgress');
     const progressFill = document.getElementById('progressFill');
     const progressText = document.getElementById('progressText');
-
-    converterBtn.onclick = () => converterModal.classList.add('active');
     closeConverterBtn.onclick = () => {
       converterModal.classList.remove('active');
       converterProgress.classList.remove('active');
