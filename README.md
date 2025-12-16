@@ -12,6 +12,7 @@ A static, web-hostable slide player that displays SVG slides with CSS animations
 - **PowerPoint Converter**: Convert PowerPoint (.pptx) files to SVG slides directly in the browser
 - **Visual SVG Editor**: Create and edit SVG slides with a full-featured visual editor
 - **Business Process Modelling (BPM)**: Create BPMN diagrams with specialized shapes and connectors
+- **AI Content Generation**: Generate slides, templates, and BPM diagrams using AI prompts (OpenAI)
 - **Static Hosting**: Works on any static web host (GitHub Pages, Netlify, S3, etc.)
 - **Minimal Dependencies**: Uses JSZip (via CDN) for PPTX conversion
 
@@ -199,6 +200,68 @@ Create professional business process diagrams using BPMN (Business Process Model
 - Editable labels on all shapes
 - Clean, professional appearance suitable for business documentation
 - Export as SVG slides for presentations
+
+## AI Content Generation
+
+Generate slides, templates, and BPM diagrams using AI-powered prompts powered by OpenAI:
+
+1. Click the **"AI Generate"** button (purple button in controls)
+2. Select generation type:
+   - **Slide Content**: Generate presentation slides from text prompts
+   - **BPM Diagram**: Create BPMN diagrams from process descriptions
+   - **BPM Slide (Animated)**: Create complete animated BPMN slides with titles
+   - **SVG Graphics**: Generate standalone graphics, icons, and illustrations
+   - **SVG Infographic**: Create data-rich infographics with charts and visualizations
+   - **Template**: Generate reusable slide templates
+3. Enter your prompt (e.g., "Create a slide about machine learning" or "Generate a BPM diagram for order processing")
+4. Click **"Generate"** and wait for AI to create your content
+5. Generated slides are automatically added to your presentation
+
+### Example Prompts
+
+**Slide Content:**
+- "Create a slide about artificial intelligence with a title, 3 key points, and an illustration"
+- "Make a slide explaining cloud computing benefits"
+- "Generate a slide about project management best practices"
+
+**BPM Diagrams:**
+- "Generate a BPM diagram for customer order processing workflow"
+- "Create a BPMN diagram for employee onboarding process"
+- "Make a BPM diagram for invoice approval process"
+
+**BPM Slides (Animated):**
+- "Create an animated BPM slide for order fulfillment process"
+- "Generate a BPM slide with title for customer service workflow"
+
+**SVG Graphics:**
+- "Create a machine learning icon with neural network visualization"
+- "Generate a cloud computing graphic with servers and network"
+- "Make a data analytics illustration with charts"
+
+**SVG Infographics:**
+- "Create an infographic about global population statistics"
+- "Generate an infographic showing company growth metrics"
+- "Make an infographic comparing renewable energy sources"
+
+**Templates:**
+- "Create a professional slide template for business presentations"
+- "Generate a modern template with title and content areas"
+- "Design a colorful template for educational slides"
+
+### Configuration
+
+API key is stored in `config.js`. **Important Security Notes:**
+- For production, use environment variables or a secure backend proxy
+- Never expose API keys in client-side code for public repositories
+- Consider implementing a backend API proxy to keep keys secure
+- The current implementation works for demos but should be secured for production
+
+### How It Works
+
+- Uses OpenAI's GPT-4 model to generate SVG code
+- AI understands BPMN notation and slide design principles
+- Generated content includes proper SVG structure and animations
+- Content is immediately usable in the slide player
 
 ## Using TikZ or Asymptote
 

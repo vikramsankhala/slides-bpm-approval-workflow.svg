@@ -24,3 +24,6 @@ __pycache__/
 .env
 .env.local
 
+# API Keys (keep config.js out of public repos if it contains keys)
+config.js
+

@@ -12,7 +12,7 @@
       background: #111;
       color: #eee;
       font-family: system-ui, sans-serif;
-      overflow: hidden;
+      overflow: auto;
     }
 
     .player {
@@ -27,6 +27,8 @@
       align-items: center;
       justify-content: center;
       background: #111;
+      overflow: auto;
+      min-height: 0;
     }
 
     .stage object {
@@ -34,15 +36,28 @@
       height: 100%;
       border: none;
       background: #111;
+      opacity: 1;
+      transition: opacity 0.4s ease-in-out;
+    }
+    
+    .stage object.fade-out {
+      opacity: 0;
+    }
+    
+    .stage object.fade-in {
+      opacity: 1;
     }
 
     .controls {
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
       background: #222;
       border-top: 1px solid #333;
+      flex-wrap: wrap;
+      min-height: 50px;
     }
 
     button {
@@ -406,8 +421,9 @@
       <button id="pauseBtn" disabled>Pause</button>
       <button id="nextBtn">Next (→)</button>
       <button id="converterBtn" style="margin-left:1rem;">Convert PPTX</button>
-      <button id="editorBtn" style="margin-left:0.5rem;">New Slide</button>
-      <button id="editCurrentBtn" style="margin-left:0.5rem;">Edit Current</button>
+      <button id="editorBtn" style="margin-left:0.5rem;background:#2196F3;border-color:#2196F3;">New Slide</button>
+      <button id="editCurrentBtn" style="margin-left:0.5rem;background:#FF9800;border-color:#FF9800;">Edit Current</button>
+      <button id="aiGenerateBtn" style="margin-left:0.5rem;background:#9C27B0;border-color:#9C27B0;font-weight:bold;">🤖 AI Generate</button>
       <span id="status" style="margin-left:1rem;font-size:0.85rem;opacity:0.7;"></span>
     </div>
   </div>
@@ -517,6 +533,49 @@
     </div>
   </div>
 
+  <!-- AI Generation Modal -->
+  <div id="aiModal" class="converter-modal">
+    <div class="converter-content" style="max-width: 600px;">
+      <h2>AI Content Generator</h2>
+      <p style="color: #aaa; margin-bottom: 1rem;">
+        Generate slides, templates, or BPM diagrams using AI prompts.
+      </p>
+      
+      <div class="property-group" style="margin-bottom: 1rem;">
+        <label style="color: #aaa; font-size: 0.85rem; margin-bottom: 0.25rem;">Generation Type</label>
+        <select id="aiGenerationType" style="width: 100%; padding: 0.4rem; background: #333; border: 1px solid #555; color: #eee; border-radius: 4px;">
+          <option value="slide">Slide Content</option>
+          <option value="bpm">BPM Diagram</option>
+          <option value="bpm-slide">BPM Slide (Animated)</option>
+          <option value="graphics">SVG Graphics</option>
+          <option value="infographic">SVG Infographic</option>
+          <option value="template">Template</option>
+        </select>
+      </div>
+      
+      <div class="property-group" style="margin-bottom: 1rem;">
+        <label style="color: #aaa; font-size: 0.85rem; margin-bottom: 0.25rem;">Your Prompt</label>
+        <textarea id="aiPrompt" rows="4" style="width: 100%; padding: 0.4rem; background: #333; border: 1px solid #555; color: #eee; border-radius: 4px; font-family: inherit; resize: vertical;" placeholder="E.g., 'Create a slide about machine learning with a title, 3 key points, and an illustration' or 'Generate a BPM diagram for order processing workflow'"></textarea>
+      </div>
+      
+      <div class="converter-progress" id="aiProgress" style="display: none;">
+        <div style="color: #aaa; margin-bottom: 0.5rem;">Generating with AI...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="aiProgressFill"></div>
+        </div>
+        <div id="aiProgressText" style="color: #888; font-size: 0.85rem; margin-top: 0.5rem;"></div>
+      </div>
+      
+      <div class="converter-actions">
+        <button id="generateAiBtn" class="tool-btn" style="background: #9C27B0;">Generate</button>
+        <button id="closeAiBtn" class="tool-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuration -->
+  <script src="config.js"></script>
+  
   <!-- JSZip library for PPTX extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -542,11 +601,35 @@
     const pauseBtn = document.getElementById('pauseBtn');
     const statusEl = document.getElementById('status');
 
-    function loadSlide(index) {
+    function loadSlide(index, skipTransition = false) {
       if (index < 0 || index >= slides.length) return;
-      current = index;
-      frame.data = slides[current];
-      statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+      
+      if (skipTransition) {
+        // Skip transition for initial load
+        current = index;
+        frame.data = slides[current];
+        statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+        return;
+      }
+      
+      // Fade out current slide
+      frame.classList.add('fade-out');
+      
+      // Wait for fade out, then load new slide
+      setTimeout(() => {
+        current = index;
+        frame.data = slides[current];
+        statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+        
+        // Fade in new slide
+        frame.classList.remove('fade-out');
+        frame.classList.add('fade-in');
+        
+        // Remove fade-in class after transition completes
+        setTimeout(() => {
+          frame.classList.remove('fade-in');
+        }, 400);
+      }, 200); // Half of transition duration
     }
 
     function onSlideLoaded() {
@@ -590,11 +673,16 @@
     };
 
     function startAutoPlay() {
-      if (autoPlayTimer) return;
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
       playBtn.disabled = true;
       pauseBtn.disabled = false;
       statusEl.textContent = `Auto-play (every ${autoPlayDelay / 1000}s) — Slide ${current + 1} / ${slides.length}`;
-      autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
+      autoPlayTimer = setInterval(() => {
+        nextSlide(true);
+      }, autoPlayDelay);
     }
 
     function stopAutoPlay() {
@@ -606,8 +694,8 @@
       statusEl.textContent = `Manual mode — Slide ${current + 1} / ${slides.length}`;
     }
 
-    playBtn.onclick = startAutoPlay;
-    pauseBtn.onclick = stopAutoPlay;
+    playBtn.addEventListener('click', startAutoPlay);
+    pauseBtn.addEventListener('click', stopAutoPlay);
 
     // Keyboard navigation
     document.addEventListener('keydown', e => {
@@ -622,8 +710,306 @@
       }
     });
 
-    // Initialize
-    loadSlide(current);
+    // Initialize (skip transition on first load)
+    loadSlide(current, true);
+    
+    // Debug: Verify buttons are found
+    if (!playBtn) console.error('Play button not found');
+    if (!pauseBtn) console.error('Pause button not found');
+    if (!nextBtn) console.error('Next button not found');
+    if (!prevBtn) console.error('Prev button not found');
+    
+    // Verify editor and AI buttons exist (they're defined later in the code)
+    console.log('Slide Player initialized. Buttons should be visible in the controls bar.');
+
+    // ===== AI Content Generator =====
+    const aiModal = document.getElementById('aiModal');
+    const aiGenerateBtn = document.getElementById('aiGenerateBtn');
+    const closeAiBtn = document.getElementById('closeAiBtn');
+    const generateAiBtn = document.getElementById('generateAiBtn');
+    const aiPrompt = document.getElementById('aiPrompt');
+    const aiGenerationType = document.getElementById('aiGenerationType');
+    const aiProgress = document.getElementById('aiProgress');
+    const aiProgressFill = document.getElementById('aiProgressFill');
+    const aiProgressText = document.getElementById('aiProgressText');
+    
+    // OpenAI API Configuration (loaded from config.js)
+    const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
+    const OPENAI_API_URL = CONFIG.OPENAI_API_URL;
+    const OPENAI_MODEL = CONFIG.OPENAI_MODEL || 'gpt-4';
+    
+    aiGenerateBtn.onclick = () => {
+      aiModal.classList.add('active');
+    };
+    
+    closeAiBtn.onclick = () => {
+      aiModal.classList.remove('active');
+      aiProgress.style.display = 'none';
+      aiPrompt.value = '';
+    };
+    
+    aiModal.onclick = (e) => {
+      if (e.target === aiModal) {
+        aiModal.classList.remove('active');
+        aiProgress.style.display = 'none';
+        aiPrompt.value = '';
+      }
+    };
+    
+    generateAiBtn.onclick = async () => {
+      const prompt = aiPrompt.value.trim();
+      const type = aiGenerationType.value;
+      
+      if (!prompt) {
+        alert('Please enter a prompt');
+        return;
+      }
+      
+      aiProgress.style.display = 'block';
+      aiProgressFill.style.width = '0%';
+      aiProgressText.textContent = 'Connecting to AI...';
+      generateAiBtn.disabled = true;
+      
+      try {
+        aiProgressFill.style.width = '30%';
+        aiProgressText.textContent = 'Generating content...';
+        
+        const systemPrompt = getSystemPrompt(type);
+        const userPrompt = getFormattedPrompt(prompt, type);
+        
+        const response = await fetch(OPENAI_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: OPENAI_MODEL,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 2000
+          })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error?.message || 'API request failed');
+        }
+        
+        aiProgressFill.style.width = '70%';
+        aiProgressText.textContent = 'Processing response...';
+        
+        const data = await response.json();
+        const svgContent = data.choices[0].message.content;
+        
+        // Extract SVG from markdown code blocks if present
+        const svgMatch = svgContent.match(/```(?:svg|html)?\s*([\s\S]*?)```/);
+        const cleanSvg = svgMatch ? svgMatch[1].trim() : svgContent.trim();
+        
+        aiProgressFill.style.width = '90%';
+        aiProgressText.textContent = 'Creating slide...';
+        
+        // Create blob and add to slides
+        const blob = new Blob([cleanSvg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        slides.push(url);
+        
+        aiProgressFill.style.width = '100%';
+        aiProgressText.textContent = 'Success! Slide added.';
+        
+        setTimeout(() => {
+          aiModal.classList.remove('active');
+          aiProgress.style.display = 'none';
+          aiPrompt.value = '';
+          loadSlide(slides.length - 1);
+        }, 1000);
+        
+      } catch (error) {
+        console.error('AI Generation Error:', error);
+        aiProgressText.textContent = `Error: ${error.message}`;
+        aiProgressFill.style.background = '#f44336';
+        alert(`AI Generation failed: ${error.message}`);
+      } finally {
+        generateAiBtn.disabled = false;
+      }
+    };
+    
+    function getSystemPrompt(type) {
+      switch(type) {
+        case 'bpm':
+          return `You are an expert in Business Process Modeling Notation (BPMN). Generate valid SVG code for BPMN diagrams. 
+Use standard BPMN shapes:
+- Start Event: blue circle (fill="#2196F3")
+- End Event: red circle (fill="#f44336")
+- Process: green rectangle (fill="#4CAF50", rx="5")
+- Decision: orange diamond/polygon (fill="#FF9800")
+- Sub-process: purple rounded rectangle (fill="#9C27B0", rx="8")
+- Connectors: black lines with arrow markers
+
+Always include:
+- viewBox="0 0 960 720"
+- xmlns="http://www.w3.org/2000/svg"
+- defs with arrowhead marker
+- data-bpm-type attributes on shapes
+- data-animate="true" on elements
+- Proper connectors between elements
+- Text labels on all shapes
+
+Return ONLY valid SVG code, no explanations.`;
+          
+        case 'bpm-slide':
+          return `You are an expert in Business Process Modeling Notation (BPMN) and slide design. Generate an animated BPMN diagram as a presentation slide.
+Create a complete slide with:
+- Title at the top
+- BPMN diagram in the center
+- Professional layout
+
+Use standard BPMN shapes:
+- Start Event: blue circle (fill="#2196F3")
+- End Event: red circle (fill="#f44336")
+- Process: green rectangle (fill="#4CAF50", rx="5")
+- Decision: orange diamond/polygon (fill="#FF9800")
+- Sub-process: purple rounded rectangle (fill="#9C27B0", rx="8")
+- Connectors: black lines with arrow markers
+
+Always include:
+- viewBox="0 0 960 720"
+- xmlns="http://www.w3.org/2000/svg"
+- Background rectangle (fill="#ffffff" or dark theme)
+- Title text at top (large, bold)
+- defs with arrowhead marker
+- data-bpm-type attributes on shapes
+- data-animate="true" on ALL elements for slide animations
+- Proper connectors between elements
+- Text labels on all shapes
+- Professional color scheme
+
+Return ONLY valid SVG code, no explanations.`;
+          
+        case 'graphics':
+          return `You are an expert SVG graphics designer. Generate beautiful, professional SVG graphics.
+Create standalone graphics that can be used in presentations:
+- Icons, illustrations, diagrams
+- Charts, graphs, visualizations
+- Decorative elements, backgrounds
+- Logos, badges, emblems
+
+Use:
+- viewBox="0 0 960 720" (or appropriate dimensions)
+- xmlns="http://www.w3.org/2000/svg"
+- Clean, modern design
+- data-animate="true" on elements for animations
+- Professional color palettes
+- Scalable vector graphics
+- Well-structured paths and shapes
+
+Return ONLY valid SVG code, no explanations.`;
+          
+        case 'infographic':
+          return `You are an expert infographic designer. Generate comprehensive SVG infographics.
+Create data-rich visualizations with:
+- Charts, graphs, statistics
+- Icons and illustrations
+- Text labels and annotations
+- Visual hierarchy
+- Color-coded sections
+- Clear data presentation
+
+Use:
+- viewBox="0 0 960 720"
+- xmlns="http://www.w3.org/2000/svg"
+- Background (light or dark theme)
+- Multiple sections/layouts
+- data-animate="true" on key elements
+- Professional typography
+- Charts: bar charts, pie charts, line graphs (using SVG shapes)
+- Icons and visual elements
+- Clear labels and legends
+- Balanced, readable layout
+
+Return ONLY valid SVG code, no explanations.`;
+          
+        case 'template':
+          return `You are a slide design expert. Generate clean, professional SVG slide templates.
+Use:
+- viewBox="0 0 960 720"
+- xmlns="http://www.w3.org/2000/svg"
+- Modern color schemes
+- data-animate="true" on key elements
+- Professional typography
+- Balanced layouts
+- Placeholder areas for content
+
+Return ONLY valid SVG code, no explanations.`;
+          
+        case 'slide':
+        default:
+          return `You are a presentation design expert. Generate beautiful SVG slides.
+Use:
+- viewBox="0 0 960 720"
+- xmlns="http://www.w3.org/2000/svg"
+- Modern, professional design
+- data-animate="true" on elements for animations
+- Good contrast and readability
+- Balanced composition
+- Appropriate graphics and illustrations
+
+Return ONLY valid SVG code, no explanations.`;
+      }
+    }
+    
+    function getFormattedPrompt(prompt, type) {
+      switch(type) {
+        case 'bpm':
+          return `Generate a BPMN diagram SVG for: ${prompt}
+
+Include all necessary elements, connectors, and labels. Make it professional and clear.`;
+          
+        case 'bpm-slide':
+          return `Create an animated BPMN diagram slide SVG for: ${prompt}
+
+Include:
+- A title at the top describing the process
+- A complete BPMN diagram with all necessary elements
+- Proper connectors and flow
+- Professional layout suitable for presentation
+- All elements should have data-animate="true" for animations`;
+          
+        case 'graphics':
+          return `Create a professional SVG graphic for: ${prompt}
+
+Make it:
+- Visually appealing and modern
+- Scalable and clean
+- Suitable for use in presentations
+- Include animations where appropriate`;
+          
+        case 'infographic':
+          return `Create a comprehensive SVG infographic about: ${prompt}
+
+Include:
+- Data visualization (charts, graphs, statistics)
+- Icons and visual elements
+- Clear labels and annotations
+- Professional layout
+- Color-coded sections
+- Multiple data points presented visually`;
+          
+        case 'template':
+          return `Create a professional slide template SVG for: ${prompt}
+
+Make it versatile and reusable with placeholder areas.`;
+          
+        case 'slide':
+        default:
+          return `Create a professional presentation slide SVG about: ${prompt}
+
+Make it visually appealing with appropriate graphics, text, and layout.`;
+      }
+    }
 
     // ===== PowerPoint to SVG Converter =====
     const converterModal = document.getElementById('converterModal');
