@@ -213,6 +213,7 @@ Generate slides, templates, and BPM diagrams using AI-powered prompts powered by
    - **SVG Graphics**: Generate standalone graphics, icons, and illustrations
    - **SVG Infographic**: Create data-rich infographics with charts and visualizations
    - **Template**: Generate reusable slide templates
+   - **Generate Image (DALL-E)**: Create images using DALL-E 3 and embed them in slides
 3. Enter your prompt (e.g., "Create a slide about machine learning" or "Generate a BPM diagram for order processing")
 4. Click **"Generate"** and wait for AI to create your content
 5. Generated slides are automatically added to your presentation
@@ -247,6 +248,12 @@ Generate slides, templates, and BPM diagrams using AI-powered prompts powered by
 - "Create a professional slide template for business presentations"
 - "Generate a modern template with title and content areas"
 - "Design a colorful template for educational slides"
+
+**Image Generation (DALL-E):**
+- "A futuristic cityscape at sunset with flying cars"
+- "A professional business team collaborating in a modern office"
+- "An abstract representation of artificial intelligence and machine learning"
+- "A colorful infographic style illustration of cloud computing"
 
 ### Configuration
 
