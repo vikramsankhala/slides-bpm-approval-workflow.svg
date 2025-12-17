@@ -855,18 +855,20 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       
       // Play narration for this slide if audio is enabled
       if (audioEnabled && slideNarrations[current]) {
+        // Start playing audio - it will resolve when audio actually ends
         playNarration(current).then(audioDuration => {
-          // If auto-play is active, schedule next slide based on audio duration
+          // Only schedule next slide if auto-play is still active
           if (autoPlayTimer && audioDuration > 0) {
-            console.log(`Scheduling next slide in ${Math.round(audioDuration + 500)}ms`);
-            // Schedule next slide after audio completes
+            console.log(`Audio completed. Scheduling next slide in ${Math.round(audioDuration + 500)}ms`);
+            // Schedule next slide after audio completes (audioDuration is already the full duration)
+            // We add a small buffer for smooth transition
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 // Auto-play is still active, advance to next slide
                 console.log('Advancing to next slide after audio completion');
                 nextSlide(true);
               }
-            }, audioDuration + 500); // Add 500ms buffer after audio ends
+            }, 500); // Small buffer after audio ends (audioDuration already accounts for full play time)
           }
         }).catch(err => {
           console.error('Error playing narration:', err);
@@ -1096,21 +1098,18 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       autoPlayTimer = true; // Use true instead of interval ID
       
       // Start playing narration for current slide, which will trigger next slide when done
+      // The loadSlide function will handle scheduling the next slide when audio completes
       if (audioEnabled && slideNarrations[current]) {
+        // loadSlide will handle playing audio and scheduling next slide
+        // Just ensure audio plays for current slide
         playNarration(current).then(duration => {
           if (autoPlayTimer && duration > 0) {
+            // Schedule next slide after audio completes
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 nextSlide(true);
               }
             }, duration + 500);
-          } else if (autoPlayTimer) {
-            // Fallback if duration not available
-            nextSlideTimeout = setTimeout(() => {
-              if (autoPlayTimer) {
-                nextSlide(true);
-              }
-            }, autoPlayDelay);
           }
         });
       } else {
