@@ -9,7 +9,7 @@
   
   <!-- Title with AI icon -->
   <text x="400" y="120" fill="#fff" font-size="56" text-anchor="middle" font-weight="bold" data-animate="true">
-    > AI Content Generator
+    🤖 AI Content Generator
   </text>
   
   <!-- Main feature box -->
@@ -41,7 +41,7 @@
   <!-- How to access -->
   <rect x="150" y="500" width="500" height="60" fill="#2196F3" opacity="0.2" rx="8" data-animate="true"/>
   <text x="400" y="530" fill="#64B5F6" font-size="22" text-anchor="middle" font-weight="bold" data-animate="true">
-    Click the "> AI Generator" button
+    Click the "🤖 AI Generator" button
   </text>
   <text x="400" y="555" fill="#aaa" font-size="16" text-anchor="middle" data-animate="true">
     to start creating slides with AI
