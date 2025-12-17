@@ -855,9 +855,11 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       
       // Play narration for this slide if audio is enabled
       if (audioEnabled && slideNarrations[current]) {
+        console.log(`Starting audio playback for slide ${current + 1}`);
         // Start playing audio - promise resolves ONLY when audio.onended fires
         playNarration(current).then(audioDuration => {
           // Promise resolves when audio.onended fires, meaning audio has completed
+          console.log(`Audio promise resolved for slide ${current + 1} with duration: ${Math.round(audioDuration)}ms`);
           // Only schedule next slide if auto-play is still active
           if (autoPlayTimer && audioDuration > 0) {
             console.log(`Audio finished for slide ${current + 1}. Advancing to next slide now`);
@@ -869,11 +871,20 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
                 nextSlide(true);
               }
             }, 300); // Small buffer for smooth transition (audio already finished)
+          } else if (autoPlayTimer) {
+            console.log(`Auto-play active but audioDuration is ${audioDuration}, using fallback delay`);
+            // Fallback if duration is 0 or invalid
+            nextSlideTimeout = setTimeout(() => {
+              if (autoPlayTimer) {
+                nextSlide(true);
+              }
+            }, autoPlayDelay);
           }
         }).catch(err => {
           console.error('Error playing narration:', err);
           // Fallback: use default delay if audio fails
           if (autoPlayTimer) {
+            console.log('Using fallback delay due to error');
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 nextSlide(true);
@@ -883,6 +894,7 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         });
       } else if (autoPlayTimer) {
         // No audio, use fallback delay
+        console.log(`No audio for slide ${current + 1}, using fallback delay`);
         nextSlideTimeout = setTimeout(() => {
           if (autoPlayTimer) {
             nextSlide(true);
@@ -949,6 +961,11 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
           resolveOnce(finalDuration);
         };
         
+        // Set up error handler BEFORE trying to play
+        audio.oncanplaythrough = () => {
+          console.log(`Audio ready to play for slide ${slideIndex + 1}`);
+        };
+        
         // Try to play immediately
         const playPromise = audio.play();
         
@@ -960,8 +977,9 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
               // Don't resolve here - wait for onended event
             })
             .catch(error => {
-              // Auto-play was prevented
-              console.log('Auto-play prevented, using Web Speech API fallback');
+              // Auto-play was prevented or other error
+              console.log(`Audio play failed for slide ${slideIndex + 1}:`, error);
+              console.log('Using Web Speech API fallback');
               // Use Web Speech API as fallback (doesn't require user interaction)
               const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
               speakText(slideNarrations[slideIndex]);
@@ -970,10 +988,15 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
                 resolveOnce(speechDuration);
               }, speechDuration);
             });
+        } else {
+          // Fallback if play() doesn't return a promise
+          console.log('Audio.play() did not return a promise, using Web Speech API fallback');
+          const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
+          speakText(slideNarrations[slideIndex]);
+          setTimeout(() => {
+            resolveOnce(speechDuration);
+          }, speechDuration);
         }
-        
-        // Load the audio
-        audio.load();
       });
     }
     
@@ -1104,25 +1127,10 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       // Mark auto-play as active (we'll use audio-based timing instead of interval)
       autoPlayTimer = true; // Use true instead of interval ID
       
-      // Start playing narration for current slide, which will trigger next slide when done
-      // The loadSlide function will handle scheduling the next slide when audio completes
-      if (audioEnabled && slideNarrations[current]) {
-        // loadSlide will handle playing audio and scheduling next slide
-        // Just ensure audio plays for current slide
-        playNarration(current).then(duration => {
-          if (autoPlayTimer && duration > 0) {
-            // Schedule next slide after audio completes
-            nextSlideTimeout = setTimeout(() => {
-              if (autoPlayTimer) {
-                nextSlide(true);
-              }
-            }, duration + 500);
-          }
-        });
-      } else {
-        // Fallback to interval if no audio
-        autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
-      }
+      // loadSlide will handle playing audio and scheduling next slide when audio completes
+      // No need to call playNarration here - loadSlide already does it
+      // Just trigger loadSlide for current slide to start the audio-based cycle
+      loadSlide(current);
     }
 
     function stopAutoPlay() {
