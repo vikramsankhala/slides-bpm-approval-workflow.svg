@@ -1,0 +1,49 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#16213e"/>
+  
+  <!-- Step indicator -->
+  <circle cx="100" cy="80" r="30" fill="#2196F3" data-animate="true"/>
+  <text x="100" y="90" fill="#fff" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">2</text>
+  
+  <text x="400" y="80" fill="#fff" font-size="40" text-anchor="middle" font-weight="bold" data-animate="true">
+    Step 2: Choose Template or Custom
+  </text>
+  
+  <!-- Template buttons visualization -->
+  <g data-animate="true">
+    <rect x="80" y="150" width="140" height="80" fill="#4CAF50" opacity="0.3" rx="6" stroke="#4CAF50" stroke-width="2"/>
+    <text x="150" y="185" fill="#4CAF50" font-size="18" text-anchor="middle" font-weight="bold">Title Slide</text>
+    <text x="150" y="210" fill="#aaa" font-size="14" text-anchor="middle">Quick template</text>
+    
+    <rect x="240" y="150" width="140" height="80" fill="#2196F3" opacity="0.3" rx="6" stroke="#2196F3" stroke-width="2"/>
+    <text x="310" y="185" fill="#2196F3" font-size="18" text-anchor="middle" font-weight="bold">BPM Diagram</text>
+    <text x="310" y="210" fill="#aaa" font-size="14" text-anchor="middle">Process flow</text>
+    
+    <rect x="400" y="150" width="140" height="80" fill="#FF9800" opacity="0.3" rx="6" stroke="#FF9800" stroke-width="2"/>
+    <text x="470" y="185" fill="#FF9800" font-size="18" text-anchor="middle" font-weight="bold">Infographic</text>
+    <text x="470" y="210" fill="#aaa" font-size="14" text-anchor="middle">Statistics</text>
+    
+    <rect x="560" y="150" width="140" height="80" fill="#9C27B0" opacity="0.3" rx="6" stroke="#9C27B0" stroke-width="2"/>
+    <text x="630" y="185" fill="#9C27B0" font-size="18" text-anchor="middle" font-weight="bold">Timeline</text>
+    <text x="630" y="210" fill="#aaa" font-size="14" text-anchor="middle">Milestones</text>
+  </g>
+  
+  <!-- Or custom prompt -->
+  <text x="400" y="300" fill="#fff" font-size="28" text-anchor="middle" font-weight="bold" data-animate="true">
+    OR
+  </text>
+  
+  <!-- Custom prompt box -->
+  <rect x="150" y="340" width="500" height="120" fill="#1a1a2e" rx="8" stroke="#2196F3" stroke-width="2" data-animate="true"/>
+  <text x="400" y="375" fill="#2196F3" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">Enter Custom Prompt</text>
+  <rect x="180" y="390" width="440" height="50" fill="#333" rx="4" stroke="#555" stroke-width="1" data-animate="true"/>
+  <text x="400" y="420" fill="#888" font-size="16" text-anchor="middle" data-animate="true">Describe what you want on your slide...</text>
+  
+  <!-- Instructions -->
+  <text x="400" y="510" fill="#4CAF50" font-size="18" text-anchor="middle" font-weight="bold" data-animate="true">
+    Click a template button for quick start, or type your own description
+  </text>
+  <text x="400" y="540" fill="#aaa" font-size="16" text-anchor="middle" data-animate="true">
+    Templates auto-fill the prompt with professional examples
+  </text>
+</svg>

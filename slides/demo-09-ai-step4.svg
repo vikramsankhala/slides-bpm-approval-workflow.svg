@@ -1,0 +1,41 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#16213e"/>
+  
+  <!-- Step indicator -->
+  <circle cx="100" cy="80" r="30" fill="#9C27B0" data-animate="true"/>
+  <text x="100" y="90" fill="#fff" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">4</text>
+  
+  <text x="400" y="80" fill="#fff" font-size="40" text-anchor="middle" font-weight="bold" data-animate="true">
+    Step 4: Download &amp; Use
+  </text>
+  
+  <!-- File name input -->
+  <rect x="200" y="150" width="400" height="60" fill="#1a1a2e" rx="8" stroke="#2196F3" stroke-width="2" data-animate="true"/>
+  <text x="220" y="180" fill="#2196F3" font-size="18" text-anchor="start" font-weight="bold" data-animate="true">File Name:</text>
+  <rect x="220" y="195" width="360" height="30" fill="#333" rx="4" data-animate="true"/>
+  <text x="400" y="215" fill="#888" font-size="16" text-anchor="middle" data-animate="true">my-slide</text>
+  
+  <!-- Download button -->
+  <rect x="300" y="250" width="200" height="60" fill="#4CAF50" rx="8" data-animate="true"/>
+  <text x="400" y="290" fill="#fff" font-size="24" text-anchor="middle" font-weight="bold" data-animate="true">Download SVG</text>
+  
+  <!-- Arrow pointing to folder -->
+  <path d="M 400 330 L 400 380" stroke="#4CAF50" stroke-width="4" marker-end="url(#arrow2)" data-animate="true"/>
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#4CAF50"/>
+    </marker>
+  </defs>
+  
+  <!-- Folder representation -->
+  <rect x="300" y="400" width="200" height="120" fill="#333" rx="8" stroke="#4CAF50" stroke-width="2" data-animate="true"/>
+  <path d="M 320 420 L 320 440 L 480 440 L 480 420 Z" fill="#4CAF50" opacity="0.3" data-animate="true"/>
+  <text x="400" y="460" fill="#4CAF50" font-size="18" text-anchor="middle" font-weight="bold" data-animate="true">slides/</text>
+  <text x="400" y="485" fill="#fff" font-size="16" text-anchor="middle" data-animate="true">my-slide.svg</text>
+  <text x="400" y="505" fill="#aaa" font-size="14" text-anchor="middle" data-animate="true">Move file here</text>
+  
+  <!-- Final step -->
+  <text x="400" y="550" fill="#FF9800" font-size="18" text-anchor="middle" font-weight="bold" data-animate="true">
+    Add to slides array in index.html to include in presentation
+  </text>
+</svg>

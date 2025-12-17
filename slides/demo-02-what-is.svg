@@ -1,0 +1,46 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgGrad2)"/>
+  
+  <!-- Title -->
+  <text x="400" y="80" fill="#fff" font-size="48" text-anchor="middle" font-weight="bold" data-animate="true">
+    What is the Slide Player?
+  </text>
+  
+  <!-- Main description box -->
+  <rect x="100" y="140" width="600" height="120" fill="#1a1a2e" rx="10" stroke="#4CAF50" stroke-width="2" data-animate="true"/>
+  <text x="400" y="190" fill="#fff" font-size="24" text-anchor="middle" data-animate="true">
+    A simple web application that displays
+  </text>
+  <text x="400" y="230" fill="#4CAF50" font-size="28" text-anchor="middle" font-weight="bold" data-animate="true">
+    SVG image slides
+  </text>
+  <text x="400" y="260" fill="#fff" font-size="24" text-anchor="middle" data-animate="true">
+    one at a time, like a digital slideshow
+  </text>
+  
+  <!-- Comparison -->
+  <rect x="150" y="300" width="200" height="180" fill="#2196F3" opacity="0.2" rx="8" data-animate="true"/>
+  <text x="250" y="340" fill="#2196F3" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">PowerPoint</text>
+  <text x="250" y="380" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Complex</text>
+  <text x="250" y="410" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Heavy</text>
+  <text x="250" y="440" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Multiple formats</text>
+  
+  <text x="400" y="360" fill="#fff" font-size="32" font-weight="bold" data-animate="true">VS</text>
+  
+  <rect x="450" y="300" width="200" height="180" fill="#4CAF50" opacity="0.2" rx="8" data-animate="true"/>
+  <text x="550" y="340" fill="#4CAF50" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">Slide Player</text>
+  <text x="550" y="380" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Simple</text>
+  <text x="550" y="410" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Lightweight</text>
+  <text x="550" y="440" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">SVG focused</text>
+  
+  <!-- Bottom note -->
+  <text x="400" y="540" fill="#888" font-size="18" text-anchor="middle" data-animate="true">
+    Think of it like PowerPoint, but simpler and designed for SVG files
+  </text>
+</svg>

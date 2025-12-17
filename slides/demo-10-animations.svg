@@ -1,0 +1,55 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#1a1a2e"/>
+  
+  <!-- Title -->
+  <text x="400" y="80" fill="#fff" font-size="48" text-anchor="middle" font-weight="bold" data-animate="true">
+    Adding Animations
+  </text>
+  
+  <!-- Animation effect explanation -->
+  <rect x="100" y="130" width="600" height="180" fill="#16213e" rx="10" stroke="#4CAF50" stroke-width="2" data-animate="true"/>
+  <text x="400" y="170" fill="#4CAF50" font-size="28" text-anchor="middle" font-weight="bold" data-animate="true">Animation Effects</text>
+  
+  <g data-animate="true">
+    <circle cx="200" cy="230" r="8" fill="#4CAF50"/>
+    <text x="220" y="235" fill="#fff" font-size="18" text-anchor="start">Fade in from invisible to visible</text>
+    
+    <circle cx="200" cy="270" r="8" fill="#2196F3"/>
+    <text x="220" y="275" fill="#fff" font-size="18" text-anchor="start">Scale up from 80% to 100% size</text>
+    
+    <circle cx="500" cy="230" r="8" fill="#FF9800"/>
+    <text x="520" y="235" fill="#fff" font-size="18" text-anchor="start">Duration: 0.6 seconds</text>
+    
+    <circle cx="500" cy="270" r="8" fill="#9C27B0"/>
+    <text x="520" y="275" fill="#fff" font-size="18" text-anchor="start">Smooth easing effect</text>
+  </g>
+  
+  <!-- How to add -->
+  <text x="400" y="360" fill="#fff" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">
+    How to Add Animations
+  </text>
+  
+  <!-- Step by step -->
+  <g data-animate="true">
+    <rect x="80" y="400" width="200" height="140" fill="#333" rx="6" stroke="#2196F3" stroke-width="2"/>
+    <text x="180" y="430" fill="#2196F3" font-size="20" text-anchor="middle" font-weight="bold">Step 1</text>
+    <text x="180" y="460" fill="#ccc" font-size="16" text-anchor="middle">Open SVG file</text>
+    <text x="180" y="485" fill="#ccc" font-size="16" text-anchor="middle">in text editor</text>
+    
+    <rect x="300" y="400" width="200" height="140" fill="#333" rx="6" stroke="#4CAF50" stroke-width="2"/>
+    <text x="400" y="430" fill="#4CAF50" font-size="20" text-anchor="middle" font-weight="bold">Step 2</text>
+    <text x="400" y="460" fill="#ccc" font-size="16" text-anchor="middle">Find element</text>
+    <text x="400" y="485" fill="#ccc" font-size="16" text-anchor="middle">to animate</text>
+    
+    <rect x="520" y="400" width="200" height="140" fill="#333" rx="6" stroke="#FF9800" stroke-width="2"/>
+    <text x="620" y="430" fill="#FF9800" font-size="20" text-anchor="middle" font-weight="bold">Step 3</text>
+    <text x="620" y="460" fill="#ccc" font-size="16" text-anchor="middle">Add attribute</text>
+    <text x="620" y="485" fill="#FF9800" font-size="18" text-anchor="middle" font-weight="bold">data-animate="true"</text>
+  </g>
+  
+  <!-- Code example -->
+  <rect x="150" y="560" width="500" height="30" fill="#000" rx="4" data-animate="true"/>
+  <text x="400" y="580" fill="#4CAF50" font-size="14" text-anchor="middle" font-family="monospace" data-animate="true">
+    &lt;text data-animate="true"&gt;This will animate!&lt;/text&gt;
+  </text>
+</svg>

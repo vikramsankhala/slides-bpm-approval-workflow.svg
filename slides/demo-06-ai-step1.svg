@@ -1,0 +1,41 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#16213e"/>
+  
+  <!-- Step indicator -->
+  <circle cx="100" cy="80" r="30" fill="#4CAF50" data-animate="true"/>
+  <text x="100" y="90" fill="#fff" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">1</text>
+  
+  <text x="400" y="80" fill="#fff" font-size="40" text-anchor="middle" font-weight="bold" data-animate="true">
+    Step 1: Open AI Generator
+  </text>
+  
+  <!-- Visual representation -->
+  <rect x="150" y="140" width="500" height="350" fill="#1a1a2e" rx="12" stroke="#4CAF50" stroke-width="3" stroke-dasharray="10,5" data-animate="true"/>
+  
+  <!-- Button representation -->
+  <rect x="300" y="200" width="200" height="60" fill="#2196F3" rx="8" data-animate="true"/>
+  <text x="400" y="240" fill="#fff" font-size="24" text-anchor="middle" font-weight="bold" data-animate="true">> AI Generator</text>
+  
+  <!-- Arrow pointing down -->
+  <path d="M 400 280 L 400 320" stroke="#4CAF50" stroke-width="4" marker-end="url(#arrow)" data-animate="true"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#4CAF50"/>
+    </marker>
+  </defs>
+  
+  <!-- Modal representation -->
+  <rect x="200" y="340" width="400" height="120" fill="#333" rx="8" stroke="#4CAF50" stroke-width="2" data-animate="true"/>
+  <text x="400" y="375" fill="#4CAF50" font-size="20" text-anchor="middle" font-weight="bold" data-animate="true">AI Content Generator</text>
+  <text x="400" y="405" fill="#ccc" font-size="16" text-anchor="middle" data-animate="true">Modal opens with options</text>
+  <text x="400" y="430" fill="#888" font-size="14" text-anchor="middle" data-animate="true">Select template or enter custom prompt</text>
+  
+  <!-- Instructions -->
+  <rect x="100" y="520" width="600" height="50" fill="#333" rx="6" data-animate="true"/>
+  <text x="400" y="545" fill="#4CAF50" font-size="18" text-anchor="middle" font-weight="bold" data-animate="true">
+    Click the blue "> AI Generator" button at the bottom of the screen
+  </text>
+  <text x="400" y="565" fill="#aaa" font-size="14" text-anchor="middle" data-animate="true">
+    A modal window will open with generation options
+  </text>
+</svg>

@@ -1,0 +1,49 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#aiGradient)"/>
+  
+  <!-- Title with AI icon -->
+  <text x="400" y="120" fill="#fff" font-size="56" text-anchor="middle" font-weight="bold" data-animate="true">
+    > AI Content Generator
+  </text>
+  
+  <!-- Main feature box -->
+  <rect x="100" y="180" width="600" height="280" fill="#1a1a2e" rx="12" stroke="#4CAF50" stroke-width="3" data-animate="true"/>
+  
+  <text x="400" y="230" fill="#4CAF50" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">
+    Create Slides Instantly
+  </text>
+  
+  <text x="400" y="280" fill="#fff" font-size="20" text-anchor="middle" data-animate="true">
+    Generate professional SVG slides using AI prompts
+  </text>
+  
+  <!-- Feature list -->
+  <g data-animate="true">
+    <circle cx="180" cy="330" r="8" fill="#4CAF50"/>
+    <text x="200" y="335" fill="#fff" font-size="18" text-anchor="start">BPM Diagrams</text>
+    
+    <circle cx="180" cy="370" r="8" fill="#2196F3"/>
+    <text x="200" y="375" fill="#fff" font-size="18" text-anchor="start">Infographics</text>
+    
+    <circle cx="500" cy="330" r="8" fill="#FF9800"/>
+    <text x="520" y="335" fill="#fff" font-size="18" text-anchor="start">Charts &amp; Graphs</text>
+    
+    <circle cx="500" cy="370" r="8" fill="#9C27B0"/>
+    <text x="520" y="375" fill="#fff" font-size="18" text-anchor="start">Timelines</text>
+  </g>
+  
+  <!-- How to access -->
+  <rect x="150" y="500" width="500" height="60" fill="#2196F3" opacity="0.2" rx="8" data-animate="true"/>
+  <text x="400" y="530" fill="#64B5F6" font-size="22" text-anchor="middle" font-weight="bold" data-animate="true">
+    Click the "> AI Generator" button
+  </text>
+  <text x="400" y="555" fill="#aaa" font-size="16" text-anchor="middle" data-animate="true">
+    to start creating slides with AI
+  </text>
+</svg>

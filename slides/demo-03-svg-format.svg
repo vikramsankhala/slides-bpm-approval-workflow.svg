@@ -1,0 +1,51 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#1a1a2e"/>
+  
+  <!-- Title -->
+  <text x="400" y="80" fill="#fff" font-size="48" text-anchor="middle" font-weight="bold" data-animate="true">
+    What is SVG?
+  </text>
+  
+  <!-- SVG definition -->
+  <rect x="100" y="130" width="600" height="100" fill="#16213e" rx="10" stroke="#2196F3" stroke-width="2" data-animate="true"/>
+  <text x="400" y="175" fill="#2196F3" font-size="32" text-anchor="middle" font-weight="bold" data-animate="true">
+    Scalable Vector Graphics
+  </text>
+  <text x="400" y="210" fill="#ccc" font-size="20" text-anchor="middle" data-animate="true">
+    A type of image format for vector graphics
+  </text>
+  
+  <!-- Comparison icons -->
+  <g data-animate="true">
+    <rect x="80" y="280" width="180" height="200" fill="#333" rx="8" stroke="#666" stroke-width="2"/>
+    <text x="170" y="320" fill="#fff" font-size="24" text-anchor="middle" font-weight="bold">JPG/PNG</text>
+    <rect x="110" y="350" width="120" height="80" fill="#555" rx="4"/>
+    <text x="170" y="400" fill="#aaa" font-size="14" text-anchor="middle">Raster</text>
+    <text x="170" y="425" fill="#aaa" font-size="14" text-anchor="middle">Fixed size</text>
+    <text x="170" y="450" fill="#aaa" font-size="14" text-anchor="middle">Pixel-based</text>
+  </g>
+  
+  <g data-animate="true">
+    <rect x="310" y="280" width="180" height="200" fill="#333" rx="8" stroke="#4CAF50" stroke-width="2"/>
+    <text x="400" y="320" fill="#4CAF50" font-size="24" text-anchor="middle" font-weight="bold">SVG</text>
+    <circle cx="400" cy="390" r="40" fill="#4CAF50" opacity="0.3"/>
+    <path d="M 360 390 L 400 350 L 440 390 L 400 430 Z" fill="#4CAF50" opacity="0.5"/>
+    <text x="400" y="420" fill="#aaa" font-size="14" text-anchor="middle">Vector</text>
+    <text x="400" y="445" fill="#aaa" font-size="14" text-anchor="middle">Scalable</text>
+    <text x="400" y="470" fill="#aaa" font-size="14" text-anchor="middle">Code-based</text>
+  </g>
+  
+  <g data-animate="true">
+    <rect x="540" y="280" width="180" height="200" fill="#333" rx="8" stroke="#FF9800" stroke-width="2"/>
+    <text x="630" y="320" fill="#FF9800" font-size="24" text-anchor="middle" font-weight="bold">Benefits</text>
+    <text x="630" y="360" fill="#aaa" font-size="16" text-anchor="middle"> Small file size</text>
+    <text x="630" y="390" fill="#aaa" font-size="16" text-anchor="middle"> Infinite scaling</text>
+    <text x="630" y="420" fill="#aaa" font-size="16" text-anchor="middle"> Editable code</text>
+    <text x="630" y="450" fill="#aaa" font-size="16" text-anchor="middle"> Animatable</text>
+  </g>
+  
+  <!-- Tools section -->
+  <text x="400" y="520" fill="#888" font-size="18" text-anchor="middle" data-animate="true">
+    Create SVGs with: Inkscape " Adobe Illustrator " Figma
+  </text>
+</svg>
