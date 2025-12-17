@@ -855,22 +855,25 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       
       // Play narration for this slide if audio is enabled
       if (audioEnabled && slideNarrations[current]) {
-        const audioDuration = await playNarration(current);
-        
-        // If auto-play is active, schedule next slide based on audio duration
-        if (autoPlayTimer && audioDuration > 0) {
-          // Clear existing timer
-          clearInterval(autoPlayTimer);
-          autoPlayTimer = null;
-          
-          // Schedule next slide after audio completes
-          nextSlideTimeout = setTimeout(() => {
-            if (autoPlayTimer === null) {
-              // Auto-play is still active, advance to next slide
-              nextSlide(true);
-            }
-          }, audioDuration + 500); // Add 500ms buffer after audio ends
-        }
+        playNarration(current).then(audioDuration => {
+          // If auto-play is active, schedule next slide based on audio duration
+          if (autoPlayTimer && audioDuration > 0) {
+            // Schedule next slide after audio completes
+            nextSlideTimeout = setTimeout(() => {
+              if (autoPlayTimer) {
+                // Auto-play is still active, advance to next slide
+                nextSlide(true);
+              }
+            }, audioDuration + 500); // Add 500ms buffer after audio ends
+          }
+        });
+      } else if (autoPlayTimer) {
+        // No audio, use fallback delay
+        nextSlideTimeout = setTimeout(() => {
+          if (autoPlayTimer) {
+            nextSlide(true);
+          }
+        }, autoPlayDelay);
       }
     }
     
@@ -910,11 +913,20 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
           console.log(`Audio duration for slide ${slideIndex + 1}: ${duration}ms`);
         };
         
-        audio.onended = () => {
-          // Audio finished playing
-          console.log(`Audio finished for slide ${slideIndex + 1}`);
-          resolve(duration);
-        };
+      audio.onended = () => {
+        // Audio finished playing
+        console.log(`Audio finished for slide ${slideIndex + 1}, duration: ${duration}ms`);
+        resolve(duration);
+      };
+      
+      // Also handle case where audio completes but we haven't gotten duration yet
+      audio.addEventListener('ended', () => {
+        const finalDuration = audio.duration ? (audio.duration * 1000) : duration;
+        if (!audioDurations[slideIndex]) {
+          audioDurations[slideIndex] = finalDuration;
+        }
+        resolve(finalDuration);
+      });
         
         // Try to play immediately
         const playPromise = audio.play();
@@ -1087,6 +1099,13 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
                 nextSlide(true);
               }
             }, duration + 500);
+          } else if (autoPlayTimer) {
+            // Fallback if duration not available
+            nextSlideTimeout = setTimeout(() => {
+              if (autoPlayTimer) {
+                nextSlide(true);
+              }
+            }, autoPlayDelay);
           }
         });
       } else {
@@ -1098,7 +1117,7 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
     function stopAutoPlay() {
       if (!autoPlayTimer) return;
       
-      // Clear interval if it exists
+      // Clear interval if it exists (fallback mode)
       if (typeof autoPlayTimer === 'number') {
         clearInterval(autoPlayTimer);
       }
