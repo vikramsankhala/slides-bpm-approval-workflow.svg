@@ -855,20 +855,20 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       
       // Play narration for this slide if audio is enabled
       if (audioEnabled && slideNarrations[current]) {
-        // Start playing audio - it will resolve when audio actually ends
+        // Start playing audio - promise resolves ONLY when audio.onended fires
         playNarration(current).then(audioDuration => {
+          // Promise resolves when audio.onended fires, meaning audio has completed
           // Only schedule next slide if auto-play is still active
-          // audioDuration is returned when audio.onended fires, so audio is already complete
           if (autoPlayTimer && audioDuration > 0) {
-            console.log(`Audio completed for slide ${current + 1}. Advancing to next slide immediately`);
+            console.log(`Audio finished for slide ${current + 1}. Advancing to next slide now`);
             // Audio has already finished, advance immediately with small buffer
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 // Auto-play is still active, advance to next slide
-                console.log('Advancing to next slide');
+                console.log('Advancing to next slide after audio completion');
                 nextSlide(true);
               }
-            }, 500); // Small buffer for smooth transition
+            }, 300); // Small buffer for smooth transition (audio already finished)
           }
         }).catch(err => {
           console.error('Error playing narration:', err);
