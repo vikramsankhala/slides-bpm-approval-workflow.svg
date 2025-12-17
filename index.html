@@ -517,6 +517,7 @@
     let generatedSVG = null;
     let audioEnabled = true;
     let currentAudio = null;
+    let userInteracted = false;
 
     const frame = document.getElementById('slideFrame');
     const prevBtn = document.getElementById('prevBtn');
@@ -859,29 +860,36 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       // Stop any currently playing audio
       stopNarration();
       
-      // Try to load and play static audio file
-      narrationAudio.src = audioPath;
-      narrationAudio.volume = 0.8;
+      // Create new audio element for each slide to ensure autoplay works
+      const audio = new Audio(audioPath);
+      audio.volume = 0.8;
+      currentAudio = audio;
       
-      narrationAudio.onerror = () => {
+      audio.onerror = () => {
         // If audio file doesn't exist, use Web Speech API as fallback
         console.log(`Audio file not found, using Web Speech API for slide ${slideIndex + 1}`);
         speakText(slideNarrations[slideIndex]);
       };
       
-      narrationAudio.oncanplaythrough = () => {
+      audio.oncanplaythrough = () => {
         // Auto-play the audio
-        const playPromise = narrationAudio.play();
+        const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch(error => {
-            console.log('Auto-play prevented, user interaction required');
+            console.log('Auto-play prevented, trying Web Speech API fallback');
             // Try Web Speech API as fallback
             speakText(slideNarrations[slideIndex]);
           });
         }
       };
       
-      narrationAudio.load();
+      // Also try immediate play (may work if user has interacted)
+      audio.play().catch(() => {
+        // If immediate play fails, wait for canplaythrough
+        audio.load();
+      });
+      
+      audio.load();
     }
     
     // Fallback: Use Web Speech API (browser's built-in TTS)
@@ -917,7 +925,23 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       };
     }
     
+    // Track user interaction to enable autoplay
+    document.addEventListener('click', () => {
+      userInteracted = true;
+    }, { once: true });
+    
+    document.addEventListener('keydown', () => {
+      userInteracted = true;
+    }, { once: true });
+    
     function stopNarration() {
+      // Stop current audio element
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+      // Also stop the main audio element
       if (narrationAudio) {
         narrationAudio.pause();
         narrationAudio.currentTime = 0;
