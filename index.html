@@ -1109,17 +1109,23 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
     }
 
     prevBtn.onclick = () => {
+      userInteracted = true;
       stopAutoPlay();
       prevSlide();
     };
 
     nextBtn.onclick = () => {
+      userInteracted = true;
       stopAutoPlay();
       nextSlide(false);
     };
 
     function startAutoPlay() {
       if (autoPlayTimer) return;
+      
+      // Mark user interaction for autoplay
+      userInteracted = true;
+      
       playBtn.disabled = true;
       pauseBtn.disabled = false;
       statusEl.textContent = `Auto-play (audio-based) — Slide ${current + 1} / ${slides.length}`;
