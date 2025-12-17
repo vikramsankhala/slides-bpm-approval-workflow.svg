@@ -1,4 +1,4 @@
-<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+﻿<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
   <rect width="800" height="600" fill="#1a1a2e"/>
   
   <!-- Title -->
@@ -38,10 +38,10 @@
   <g data-animate="true">
     <rect x="540" y="280" width="180" height="200" fill="#333" rx="8" stroke="#FF9800" stroke-width="2"/>
     <text x="630" y="320" fill="#FF9800" font-size="24" text-anchor="middle" font-weight="bold">Benefits</text>
-    <text x="630" y="360" fill="#aaa" font-size="16" text-anchor="middle"> Small file size</text>
-    <text x="630" y="390" fill="#aaa" font-size="16" text-anchor="middle"> Infinite scaling</text>
-    <text x="630" y="420" fill="#aaa" font-size="16" text-anchor="middle"> Editable code</text>
-    <text x="630" y="450" fill="#aaa" font-size="16" text-anchor="middle"> Animatable</text>
+    <text x="630" y="360" fill="#aaa" font-size="16" text-anchor="middle"> Small file size</text>
+    <text x="630" y="390" fill="#aaa" font-size="16" text-anchor="middle"> Infinite scaling</text>
+    <text x="630" y="420" fill="#aaa" font-size="16" text-anchor="middle"> Editable code</text>
+    <text x="630" y="450" fill="#aaa" font-size="16" text-anchor="middle"> Animatable</text>
   </g>
   
   <!-- Tools section -->
