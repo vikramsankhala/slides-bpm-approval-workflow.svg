@@ -858,13 +858,25 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         playNarration(current).then(audioDuration => {
           // If auto-play is active, schedule next slide based on audio duration
           if (autoPlayTimer && audioDuration > 0) {
+            console.log(`Scheduling next slide in ${Math.round(audioDuration + 500)}ms`);
             // Schedule next slide after audio completes
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 // Auto-play is still active, advance to next slide
+                console.log('Advancing to next slide after audio completion');
                 nextSlide(true);
               }
             }, audioDuration + 500); // Add 500ms buffer after audio ends
+          }
+        }).catch(err => {
+          console.error('Error playing narration:', err);
+          // Fallback: use default delay if audio fails
+          if (autoPlayTimer) {
+            nextSlideTimeout = setTimeout(() => {
+              if (autoPlayTimer) {
+                nextSlide(true);
+              }
+            }, autoPlayDelay);
           }
         });
       } else if (autoPlayTimer) {
@@ -898,35 +910,29 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         
         let duration = autoPlayDelay; // Default fallback duration
         
-        audio.onerror = () => {
+        audio.onerror = (error) => {
           // If audio file doesn't exist, use Web Speech API as fallback
-          console.log(`Audio file not found, using Web Speech API for slide ${slideIndex + 1}`);
+          console.log(`Audio file not found for slide ${slideIndex + 1}, using Web Speech API fallback`);
           const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
           speakText(slideNarrations[slideIndex]);
+          // Resolve with speech duration so slide waits for speech to complete
           resolve(speechDuration);
         };
         
-        audio.onloadedmetadata = () => {
-          // Get the actual duration of the audio file
-          duration = (audio.duration * 1000) || autoPlayDelay; // Convert to milliseconds
-          audioDurations[slideIndex] = duration;
-          console.log(`Audio duration for slide ${slideIndex + 1}: ${duration}ms`);
-        };
-        
-      audio.onended = () => {
-        // Audio finished playing
-        console.log(`Audio finished for slide ${slideIndex + 1}, duration: ${duration}ms`);
-        resolve(duration);
+      audio.onloadedmetadata = () => {
+        // Get the actual duration of the audio file
+        duration = (audio.duration * 1000) || autoPlayDelay; // Convert to milliseconds
+        audioDurations[slideIndex] = duration;
+        console.log(`Audio duration for slide ${slideIndex + 1}: ${Math.round(duration)}ms`);
       };
       
-      // Also handle case where audio completes but we haven't gotten duration yet
-      audio.addEventListener('ended', () => {
+      audio.onended = () => {
+        // Audio finished playing - use actual duration
         const finalDuration = audio.duration ? (audio.duration * 1000) : duration;
-        if (!audioDurations[slideIndex]) {
-          audioDurations[slideIndex] = finalDuration;
-        }
+        audioDurations[slideIndex] = finalDuration;
+        console.log(`Audio finished for slide ${slideIndex + 1}, actual duration: ${Math.round(finalDuration)}ms`);
         resolve(finalDuration);
-      });
+      };
         
         // Try to play immediately
         const playPromise = audio.play();
@@ -947,19 +953,18 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
               // Use Web Speech API as fallback (doesn't require user interaction)
               const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
               speakText(slideNarrations[slideIndex]);
-              resolve(speechDuration);
+              // Wait for speech to complete before resolving
+              setTimeout(() => {
+                resolve(speechDuration);
+              }, speechDuration);
             });
         }
         
         // Load the audio
         audio.load();
         
-        // Fallback: if duration not determined within 2 seconds, use default
-        setTimeout(() => {
-          if (!audioDurations[slideIndex]) {
-            resolve(duration);
-          }
-        }, 2000);
+        // Wait for audio to load and get duration
+        // Don't use timeout fallback - wait for actual audio completion
       });
     }
     
