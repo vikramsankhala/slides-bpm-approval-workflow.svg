@@ -1,17 +1,11 @@
 [build]
-  # This is a static site, no build needed
   publish = "."
+  command = ""
 
 [[redirects]]
-  # Redirect root to index.html
   from = "/*"
   to = "/index.html"
   status = 200
 
-[headers]
-  # Enable CORS for SVG files
-  for = "/*.svg"
-    [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Content-Type = "image/svg+xml"
-
+[build.environment]
+  NODE_VERSION = "18"
