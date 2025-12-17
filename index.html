@@ -863,6 +863,7 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       // Create new audio element for each slide to ensure autoplay works
       const audio = new Audio(audioPath);
       audio.volume = 0.8;
+      audio.preload = 'auto';
       currentAudio = audio;
       
       audio.onerror = () => {
@@ -871,24 +872,24 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         speakText(slideNarrations[slideIndex]);
       };
       
-      audio.oncanplaythrough = () => {
-        // Auto-play the audio
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.log('Auto-play prevented, trying Web Speech API fallback');
-            // Try Web Speech API as fallback
+      // Try to play immediately
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Audio started playing successfully
+            console.log(`Playing narration for slide ${slideIndex + 1}`);
+          })
+          .catch(error => {
+            // Auto-play was prevented
+            console.log('Auto-play prevented, using Web Speech API fallback');
+            // Use Web Speech API as fallback (doesn't require user interaction)
             speakText(slideNarrations[slideIndex]);
           });
-        }
-      };
+      }
       
-      // Also try immediate play (may work if user has interacted)
-      audio.play().catch(() => {
-        // If immediate play fails, wait for canplaythrough
-        audio.load();
-      });
-      
+      // Load the audio
       audio.load();
     }
     
