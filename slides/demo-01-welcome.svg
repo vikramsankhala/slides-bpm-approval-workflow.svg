@@ -5,6 +5,9 @@
       <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
     </linearGradient>
+    <clipPath id="photoClip">
+      <circle cx="690" cy="540" r="40"/>
+    </clipPath>
   </defs>
   <rect width="800" height="600" fill="url(#bgGradient)"/>
   
@@ -32,11 +35,6 @@
   <g data-animate="true">
     <!-- Photo -->
     <image x="650" y="500" width="80" height="80" href="../images/vikram-sankhala.png" preserveAspectRatio="xMidYMid slice" clip-path="url(#photoClip)"/>
-    <defs>
-      <clipPath id="photoClip">
-        <circle cx="690" cy="540" r="40"/>
-      </clipPath>
-    </defs>
     
     <!-- Creator text -->
     <text x="690" y="595" fill="#888" font-size="14" text-anchor="middle" font-family="Arial, sans-serif" data-animate="true">
