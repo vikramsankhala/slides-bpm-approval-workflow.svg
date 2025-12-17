@@ -858,17 +858,17 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         // Start playing audio - it will resolve when audio actually ends
         playNarration(current).then(audioDuration => {
           // Only schedule next slide if auto-play is still active
+          // audioDuration is returned when audio.onended fires, so audio is already complete
           if (autoPlayTimer && audioDuration > 0) {
-            console.log(`Audio completed. Scheduling next slide in ${Math.round(audioDuration + 500)}ms`);
-            // Schedule next slide after audio completes (audioDuration is already the full duration)
-            // We add a small buffer for smooth transition
+            console.log(`Audio completed for slide ${current + 1}. Advancing to next slide immediately`);
+            // Audio has already finished, advance immediately with small buffer
             nextSlideTimeout = setTimeout(() => {
               if (autoPlayTimer) {
                 // Auto-play is still active, advance to next slide
-                console.log('Advancing to next slide after audio completion');
+                console.log('Advancing to next slide');
                 nextSlide(true);
               }
-            }, 500); // Small buffer after audio ends (audioDuration already accounts for full play time)
+            }, 500); // Small buffer for smooth transition
           }
         }).catch(err => {
           console.error('Error playing narration:', err);
@@ -923,17 +923,19 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
         
       audio.onloadedmetadata = () => {
         // Get the actual duration of the audio file
-        duration = (audio.duration * 1000) || autoPlayDelay; // Convert to milliseconds
-        audioDurations[slideIndex] = duration;
-        console.log(`Audio duration for slide ${slideIndex + 1}: ${Math.round(duration)}ms`);
+        actualDuration = (audio.duration * 1000) || null; // Convert to milliseconds
+        audioDurations[slideIndex] = actualDuration;
+        console.log(`Audio metadata loaded for slide ${slideIndex + 1}, duration: ${Math.round(actualDuration)}ms`);
       };
       
+      // CRITICAL: Only resolve when audio actually ends - this is the only place we resolve
       audio.onended = () => {
-        // Audio finished playing - use actual duration
-        const finalDuration = audio.duration ? (audio.duration * 1000) : duration;
+        // Audio finished playing - use actual duration from metadata
+        const finalDuration = actualDuration || (audio.duration ? (audio.duration * 1000) : autoPlayDelay);
         audioDurations[slideIndex] = finalDuration;
-        console.log(`Audio finished for slide ${slideIndex + 1}, actual duration: ${Math.round(finalDuration)}ms`);
-        resolve(finalDuration);
+        console.log(`Audio ENDED for slide ${slideIndex + 1}, total duration: ${Math.round(finalDuration)}ms`);
+        // Only resolve once when audio actually ends
+        resolveOnce(finalDuration);
       };
         
         // Try to play immediately
