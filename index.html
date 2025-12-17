@@ -513,11 +513,13 @@
 
     let current = 0;
     let autoPlayTimer = null;
-    const autoPlayDelay = 6000; // 6s per slide
+    const autoPlayDelay = 6000; // Fallback delay if audio duration unavailable
     let generatedSVG = null;
     let audioEnabled = true;
     let currentAudio = null;
     let userInteracted = false;
+    let audioDurations = {}; // Cache for audio durations
+    let nextSlideTimeout = null;
 
     const frame = document.getElementById('slideFrame');
     const prevBtn = document.getElementById('prevBtn');
@@ -835,11 +837,17 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
     }
 
     // Slide player functions
-    function loadSlide(index) {
+    async function loadSlide(index) {
       if (index < 0 || index >= slides.length) return;
       
       // Stop current audio if playing
       stopNarration();
+      
+      // Clear any pending next slide timeout
+      if (nextSlideTimeout) {
+        clearTimeout(nextSlideTimeout);
+        nextSlideTimeout = null;
+      }
       
       current = index;
       frame.data = slides[current];
@@ -847,50 +855,108 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       
       // Play narration for this slide if audio is enabled
       if (audioEnabled && slideNarrations[current]) {
-        playNarration(current);
+        const audioDuration = await playNarration(current);
+        
+        // If auto-play is active, schedule next slide based on audio duration
+        if (autoPlayTimer && audioDuration > 0) {
+          // Clear existing timer
+          clearInterval(autoPlayTimer);
+          autoPlayTimer = null;
+          
+          // Schedule next slide after audio completes
+          nextSlideTimeout = setTimeout(() => {
+            if (autoPlayTimer === null) {
+              // Auto-play is still active, advance to next slide
+              nextSlide(true);
+            }
+          }, audioDuration + 500); // Add 500ms buffer after audio ends
+        }
       }
     }
     
     // Audio narration functions - using static files with Web Speech API fallback
     function playNarration(slideIndex) {
-      if (!audioEnabled || !slideNarrations[slideIndex]) return;
-      
-      const audioPath = `audio/narration-${slideIndex + 1}.mp3`;
-      
-      // Stop any currently playing audio
-      stopNarration();
-      
-      // Create new audio element for each slide to ensure autoplay works
-      const audio = new Audio(audioPath);
-      audio.volume = 0.8;
-      audio.preload = 'auto';
-      currentAudio = audio;
-      
-      audio.onerror = () => {
-        // If audio file doesn't exist, use Web Speech API as fallback
-        console.log(`Audio file not found, using Web Speech API for slide ${slideIndex + 1}`);
-        speakText(slideNarrations[slideIndex]);
-      };
-      
-      // Try to play immediately
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Audio started playing successfully
-            console.log(`Playing narration for slide ${slideIndex + 1}`);
-          })
-          .catch(error => {
-            // Auto-play was prevented
-            console.log('Auto-play prevented, using Web Speech API fallback');
-            // Use Web Speech API as fallback (doesn't require user interaction)
-            speakText(slideNarrations[slideIndex]);
-          });
+      if (!audioEnabled || !slideNarrations[slideIndex]) {
+        // If audio disabled, return duration 0 so slide advances immediately
+        return Promise.resolve(0);
       }
       
-      // Load the audio
-      audio.load();
+      return new Promise((resolve) => {
+        const audioPath = `audio/narration-${slideIndex + 1}.mp3`;
+        
+        // Stop any currently playing audio
+        stopNarration();
+        
+        // Create new audio element for each slide to ensure autoplay works
+        const audio = new Audio(audioPath);
+        audio.volume = 0.8;
+        audio.preload = 'auto';
+        currentAudio = audio;
+        
+        let duration = autoPlayDelay; // Default fallback duration
+        
+        audio.onerror = () => {
+          // If audio file doesn't exist, use Web Speech API as fallback
+          console.log(`Audio file not found, using Web Speech API for slide ${slideIndex + 1}`);
+          const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
+          speakText(slideNarrations[slideIndex]);
+          resolve(speechDuration);
+        };
+        
+        audio.onloadedmetadata = () => {
+          // Get the actual duration of the audio file
+          duration = (audio.duration * 1000) || autoPlayDelay; // Convert to milliseconds
+          audioDurations[slideIndex] = duration;
+          console.log(`Audio duration for slide ${slideIndex + 1}: ${duration}ms`);
+        };
+        
+        audio.onended = () => {
+          // Audio finished playing
+          console.log(`Audio finished for slide ${slideIndex + 1}`);
+          resolve(duration);
+        };
+        
+        // Try to play immediately
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              // Audio started playing successfully
+              console.log(`Playing narration for slide ${slideIndex + 1}`);
+              // Use cached duration if available, otherwise wait for metadata
+              if (audioDurations[slideIndex]) {
+                duration = audioDurations[slideIndex];
+              }
+            })
+            .catch(error => {
+              // Auto-play was prevented
+              console.log('Auto-play prevented, using Web Speech API fallback');
+              // Use Web Speech API as fallback (doesn't require user interaction)
+              const speechDuration = estimateSpeechDuration(slideNarrations[slideIndex]);
+              speakText(slideNarrations[slideIndex]);
+              resolve(speechDuration);
+            });
+        }
+        
+        // Load the audio
+        audio.load();
+        
+        // Fallback: if duration not determined within 2 seconds, use default
+        setTimeout(() => {
+          if (!audioDurations[slideIndex]) {
+            resolve(duration);
+          }
+        }, 2000);
+      });
+    }
+    
+    // Estimate speech duration (average speaking rate: ~150 words per minute)
+    function estimateSpeechDuration(text) {
+      const words = text.split(' ').length;
+      const wordsPerMinute = 150;
+      const durationMs = (words / wordsPerMinute) * 60 * 1000;
+      return Math.max(durationMs, 3000); // Minimum 3 seconds
     }
     
     // Fallback: Use Web Speech API (browser's built-in TTS)
@@ -1007,13 +1073,42 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       if (autoPlayTimer) return;
       playBtn.disabled = true;
       pauseBtn.disabled = false;
-      statusEl.textContent = `Auto-play (every ${autoPlayDelay / 1000}s) — Slide ${current + 1} / ${slides.length}`;
-      autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
+      statusEl.textContent = `Auto-play (audio-based) — Slide ${current + 1} / ${slides.length}`;
+      
+      // Mark auto-play as active (we'll use audio-based timing instead of interval)
+      autoPlayTimer = true; // Use true instead of interval ID
+      
+      // Start playing narration for current slide, which will trigger next slide when done
+      if (audioEnabled && slideNarrations[current]) {
+        playNarration(current).then(duration => {
+          if (autoPlayTimer && duration > 0) {
+            nextSlideTimeout = setTimeout(() => {
+              if (autoPlayTimer) {
+                nextSlide(true);
+              }
+            }, duration + 500);
+          }
+        });
+      } else {
+        // Fallback to interval if no audio
+        autoPlayTimer = setInterval(() => nextSlide(true), autoPlayDelay);
+      }
     }
 
     function stopAutoPlay() {
       if (!autoPlayTimer) return;
-      clearInterval(autoPlayTimer);
+      
+      // Clear interval if it exists
+      if (typeof autoPlayTimer === 'number') {
+        clearInterval(autoPlayTimer);
+      }
+      
+      // Clear next slide timeout
+      if (nextSlideTimeout) {
+        clearTimeout(nextSlideTimeout);
+        nextSlideTimeout = null;
+      }
+      
       autoPlayTimer = null;
       playBtn.disabled = false;
       pauseBtn.disabled = true;
