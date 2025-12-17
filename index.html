@@ -448,9 +448,10 @@
     });
 
     // Default API key - loaded from environment variable or Netlify build-time injection
-    // For Netlify: Set OPENAI_API_KEY in site environment variables
+    // For Netlify: Set OPENAI_API_KEY in site environment variables (will be injected by build script)
     // For local: Set in browser localStorage with key 'openai_api_key'
-    const DEFAULT_API_KEY = window.OPENAI_API_KEY || '';
+    // Build script will replace this placeholder with actual key during Netlify build
+    const DEFAULT_API_KEY = window.OPENAI_API_KEY || 'NETLIFY_API_KEY_PLACEHOLDER';
 
     // Modal controls
     aiGeneratorBtn.onclick = () => {

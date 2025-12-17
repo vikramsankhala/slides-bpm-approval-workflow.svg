@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  command = ""
+  command = "bash build.sh || echo 'Build script skipped'"
 
 [[redirects]]
   from = "/*"
