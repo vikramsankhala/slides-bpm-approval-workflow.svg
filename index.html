@@ -103,6 +103,16 @@
       background: #0077dd;
       border-color: #0066cc;
     }
+    
+    #audioToggleBtn {
+      background: #444;
+      border-color: #666;
+      min-width: 50px;
+    }
+    
+    #audioToggleBtn:hover:not(:disabled) {
+      background: #555;
+    }
 
     /* AI Generator Modal */
     .modal {
@@ -394,9 +404,13 @@
       <button id="pauseBtn" disabled>Pause</button>
       <button id="nextBtn">Next (→)</button>
       <button id="aiGeneratorBtn" class="primary">🤖 AI Generator</button>
+      <button id="audioToggleBtn" title="Toggle audio narration">🔊</button>
       <span id="status" style="margin-left:1.5rem;font-size:0.95rem;opacity:0.9;color:#fff;font-weight:500;"></span>
     </div>
   </div>
+  
+  <!-- Hidden audio element -->
+  <audio id="narrationAudio" preload="auto"></audio>
 
   <!-- AI Generator Modal -->
   <div id="aiModal" class="modal">
@@ -482,18 +496,36 @@
       'slides/demo-09-ai-step4.svg',
       'slides/demo-10-animations.svg'
     ];
+    
+    // Narration text for each slide
+    const slideNarrations = [
+      "Welcome to the SVG Slide Player. This is a professional presentation tool designed specifically for SVG image files. Think of it like PowerPoint, but simpler and more elegant.",
+      "The Slide Player is a simple web application that displays a series of SVG images one at a time, like a digital slideshow. You can navigate through slides manually or set them to play automatically.",
+      "SVG stands for Scalable Vector Graphics. It's a type of image format, like JPG or PNG, but designed for vector graphics. Unlike raster images, SVG files scale perfectly at any size and can be edited as code. You can create SVGs using tools like Inkscape, Adobe Illustrator, or Figma.",
+      "At the bottom of the screen, you'll see control buttons. Prev moves to the previous slide, Play starts automatic playback, Pause stops it, and Next moves to the next slide. You can also use keyboard shortcuts: Right Arrow or Spacebar for next, Left Arrow for previous. The status display shows which slide you're viewing.",
+      "The AI Content Generator lets you create professional slides instantly. Click the AI Generator button to access templates for BPM diagrams, infographics, charts, timelines, and more. Generate slides using AI prompts and download them instantly.",
+      "Step 1: Open the AI Generator. Click the blue AI Generator button at the bottom of the screen. A modal window will open with generation options, allowing you to select templates or enter custom prompts.",
+      "Step 2: Choose a template or enter a custom prompt. Quick templates are available for Title Slides, BPM Diagrams, Infographics, Bar Charts, and Timelines. Click a template button for quick start, or type your own description for custom slides.",
+      "Step 3: Generate and preview your slide. Click the Generate Slide button, and the AI will create your SVG code. A preview appears below showing your generated slide. Review it before downloading.",
+      "Step 4: Download and use your slide. Enter a file name, then click Download SVG. The file will be saved to your downloads folder. Move it to your slides folder and add it to the slides array in index.html to include it in your presentation.",
+      "Adding animations to your slides is optional but powerful. Elements fade in from invisible to visible and scale up from 80% to 100% size over 0.6 seconds. To animate an element, open your SVG file in a text editor and add data-animate equals true to that element."
+    ];
 
     let current = 0;
     let autoPlayTimer = null;
     const autoPlayDelay = 6000; // 6s per slide
     let generatedSVG = null;
+    let audioEnabled = true;
+    let currentAudio = null;
 
     const frame = document.getElementById('slideFrame');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const playBtn = document.getElementById('playBtn');
     const pauseBtn = document.getElementById('pauseBtn');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
     const statusEl = document.getElementById('status');
+    const narrationAudio = document.getElementById('narrationAudio');
     const aiGeneratorBtn = document.getElementById('aiGeneratorBtn');
     const aiModal = document.getElementById('aiModal');
     const closeModal = document.getElementById('closeModal');
@@ -804,10 +836,110 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
     // Slide player functions
     function loadSlide(index) {
       if (index < 0 || index >= slides.length) return;
+      
+      // Stop current audio if playing
+      stopNarration();
+      
       current = index;
       frame.data = slides[current];
       statusEl.textContent = `Slide ${current + 1} / ${slides.length}`;
+      
+      // Play narration for this slide if audio is enabled
+      if (audioEnabled && slideNarrations[current]) {
+        playNarration(current);
+      }
     }
+    
+    // Audio narration functions
+    async function playNarration(slideIndex) {
+      if (!audioEnabled || !slideNarrations[slideIndex]) return;
+      
+      const narrationText = slideNarrations[slideIndex];
+      const audioPath = `audio/narration-${slideIndex + 1}.mp3`;
+      
+      // Try to load existing audio file
+      narrationAudio.src = audioPath;
+      narrationAudio.volume = 0.8;
+      
+      narrationAudio.onerror = async () => {
+        // Audio file doesn't exist, generate it using OpenAI TTS
+        console.log(`Generating audio for slide ${slideIndex + 1}...`);
+        await generateAudioNarration(slideIndex, narrationText);
+      };
+      
+      narrationAudio.onloadeddata = () => {
+        narrationAudio.play().catch(err => {
+          console.log('Audio play failed:', err);
+          // Auto-play may be blocked, generate audio anyway
+          generateAudioNarration(slideIndex, narrationText);
+        });
+      };
+      
+      narrationAudio.load();
+    }
+    
+    async function generateAudioNarration(slideIndex, text) {
+      const apiKey = localStorage.getItem('openai_api_key') || DEFAULT_API_KEY;
+      
+      if (!apiKey || !apiKey.startsWith('sk-')) {
+        console.log('OpenAI API key not available for audio generation');
+        return;
+      }
+      
+      try {
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'tts-1',
+            input: text,
+            voice: 'alloy' // Options: alloy, echo, fable, onyx, nova, shimmer
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('OpenAI TTS API error');
+        }
+        
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Play the generated audio
+        narrationAudio.src = audioUrl;
+        narrationAudio.volume = 0.8;
+        narrationAudio.play().catch(err => console.log('Audio play error:', err));
+        
+        // Optionally save to audio folder (requires server-side handling)
+        // For now, we'll use the blob URL directly
+        
+      } catch (error) {
+        console.error('Error generating audio:', error);
+      }
+    }
+    
+    function stopNarration() {
+      if (narrationAudio) {
+        narrationAudio.pause();
+        narrationAudio.currentTime = 0;
+      }
+    }
+    
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      audioToggleBtn.textContent = audioEnabled ? '🔊' : '🔇';
+      audioToggleBtn.title = audioEnabled ? 'Mute audio' : 'Unmute audio';
+      
+      if (!audioEnabled) {
+        stopNarration();
+      } else if (slideNarrations[current]) {
+        playNarration(current);
+      }
+    }
+    
+    audioToggleBtn.onclick = toggleAudio;
 
     function onSlideLoaded() {
       const svgDoc = frame.contentDocument;
