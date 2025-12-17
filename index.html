@@ -409,8 +409,8 @@
     </div>
   </div>
   
-  <!-- Hidden audio element -->
-  <audio id="narrationAudio" preload="auto"></audio>
+  <!-- Hidden audio element with autoplay -->
+  <audio id="narrationAudio" preload="auto" autoplay></audio>
 
   <!-- AI Generator Modal -->
   <div id="aiModal" class="modal">
@@ -850,80 +850,81 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       }
     }
     
-    // Audio narration functions
-    async function playNarration(slideIndex) {
+    // Audio narration functions - using static files with Web Speech API fallback
+    function playNarration(slideIndex) {
       if (!audioEnabled || !slideNarrations[slideIndex]) return;
       
-      const narrationText = slideNarrations[slideIndex];
       const audioPath = `audio/narration-${slideIndex + 1}.mp3`;
       
-      // Try to load existing audio file
+      // Stop any currently playing audio
+      stopNarration();
+      
+      // Try to load and play static audio file
       narrationAudio.src = audioPath;
       narrationAudio.volume = 0.8;
       
-      narrationAudio.onerror = async () => {
-        // Audio file doesn't exist, generate it using OpenAI TTS
-        console.log(`Generating audio for slide ${slideIndex + 1}...`);
-        await generateAudioNarration(slideIndex, narrationText);
+      narrationAudio.onerror = () => {
+        // If audio file doesn't exist, use Web Speech API as fallback
+        console.log(`Audio file not found, using Web Speech API for slide ${slideIndex + 1}`);
+        speakText(slideNarrations[slideIndex]);
       };
       
-      narrationAudio.onloadeddata = () => {
-        narrationAudio.play().catch(err => {
-          console.log('Audio play failed:', err);
-          // Auto-play may be blocked, generate audio anyway
-          generateAudioNarration(slideIndex, narrationText);
-        });
+      narrationAudio.oncanplaythrough = () => {
+        // Auto-play the audio
+        const playPromise = narrationAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log('Auto-play prevented, user interaction required');
+            // Try Web Speech API as fallback
+            speakText(slideNarrations[slideIndex]);
+          });
+        }
       };
       
       narrationAudio.load();
     }
     
-    async function generateAudioNarration(slideIndex, text) {
-      const apiKey = localStorage.getItem('openai_api_key') || DEFAULT_API_KEY;
-      
-      if (!apiKey || !apiKey.startsWith('sk-')) {
-        console.log('OpenAI API key not available for audio generation');
-        return;
-      }
-      
-      try {
-        const response = await fetch('https://api.openai.com/v1/audio/speech', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'tts-1',
-            input: text,
-            voice: 'alloy' // Options: alloy, echo, fable, onyx, nova, shimmer
-          })
-        });
+    // Fallback: Use Web Speech API (browser's built-in TTS)
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        // Stop any ongoing speech
+        window.speechSynthesis.cancel();
         
-        if (!response.ok) {
-          throw new Error('OpenAI TTS API error');
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.pitch = 1.0;
+        utterance.volume = 0.8;
+        
+        // Try to use a better voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => 
+          v.name.includes('Google') || 
+          v.name.includes('Microsoft') ||
+          v.lang.startsWith('en')
+        );
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
         }
         
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        // Play the generated audio
-        narrationAudio.src = audioUrl;
-        narrationAudio.volume = 0.8;
-        narrationAudio.play().catch(err => console.log('Audio play error:', err));
-        
-        // Optionally save to audio folder (requires server-side handling)
-        // For now, we'll use the blob URL directly
-        
-      } catch (error) {
-        console.error('Error generating audio:', error);
+        window.speechSynthesis.speak(utterance);
       }
+    }
+    
+    // Load voices when available
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        // Voices loaded
+      };
     }
     
     function stopNarration() {
       if (narrationAudio) {
         narrationAudio.pause();
         narrationAudio.currentTime = 0;
+      }
+      // Also stop Web Speech API if active
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
       }
     }
     
