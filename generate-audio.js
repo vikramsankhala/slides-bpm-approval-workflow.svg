@@ -10,7 +10,7 @@ const https = require('https');
 const API_KEY = process.env.OPENAI_API_KEY || '';
 
 const narrations = [
-  "Welcome to the SVG Slide Player. This is a professional presentation tool designed specifically for SVG image files. Think of it like PowerPoint, but simpler and more elegant.",
+  "Welcome to the SVG Slide Player. This is a professional presentation tool designed specifically for SVG image files. Think of it like PowerPoint, but simpler and more elegant. Unlike PowerPoint, this application is web-based, requires no installation, focuses exclusively on SVG graphics, and offers a streamlined interface without the complexity of traditional presentation software. It's perfect for showcasing vector graphics, diagrams, and illustrations in a clean, distraction-free environment.",
   "The Slide Player is a simple web application that displays a series of SVG images one at a time, like a digital slideshow. You can navigate through slides manually or set them to play automatically.",
   "SVG stands for Scalable Vector Graphics. It's a type of image format, like JPG or PNG, but designed for vector graphics. Unlike raster images, SVG files scale perfectly at any size and can be edited as code. You can create SVGs using tools like Inkscape, Adobe Illustrator, or Figma.",
   "At the bottom of the screen, you'll see control buttons. Prev moves to the previous slide, Play starts automatic playback, Pause stops it, and Next moves to the next slide. You can also use keyboard shortcuts: Right Arrow or Spacebar for next, Left Arrow for previous. The status display shows which slide you're viewing.",
