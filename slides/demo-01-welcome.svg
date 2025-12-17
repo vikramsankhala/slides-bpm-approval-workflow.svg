@@ -24,7 +24,23 @@
   <circle cx="400" cy="400" r="40" fill="none" stroke="#FF9800" stroke-width="2" opacity="0.5" data-animate="true"/>
   
   <!-- Tagline -->
-  <text x="400" y="520" fill="#aaa" font-size="20" text-anchor="middle" font-style="italic" data-animate="true">
+  <text x="400" y="480" fill="#aaa" font-size="20" text-anchor="middle" font-style="italic" data-animate="true">
     Simple &quot; Elegant &quot; Powerful
   </text>
+  
+  <!-- Creator credit -->
+  <g data-animate="true">
+    <!-- Photo -->
+    <image x="650" y="500" width="80" height="80" href="../images/vikram-sankhala.png" preserveAspectRatio="xMidYMid slice" clip-path="url(#photoClip)"/>
+    <defs>
+      <clipPath id="photoClip">
+        <circle cx="690" cy="540" r="40"/>
+      </clipPath>
+    </defs>
+    
+    <!-- Creator text -->
+    <text x="690" y="595" fill="#888" font-size="14" text-anchor="middle" font-family="Arial, sans-serif" data-animate="true">
+      Created by Vikram Singh Sankhala
+    </text>
+  </g>
 </svg>
