@@ -982,7 +982,7 @@ ${type === 'chart' ? 'Create clean, professional charts using SVG rectangles, li
       const words = text.split(' ').length;
       const wordsPerMinute = 150;
       const durationMs = (words / wordsPerMinute) * 60 * 1000;
-      return Math.max(durationMs, 3000); // Minimum 3 seconds
+      return durationMs; // No cap - use actual calculated duration
     }
     
     // Fallback: Use Web Speech API (browser's built-in TTS)
