@@ -29,6 +29,6 @@
   
   <!-- Instructions -->
   <text x="400" y="540" fill="#fff" font-size="18" text-anchor="middle" data-animate="true">
-    Click "Generate Slide" � AI creates your SVG � Preview appears below
+    Click "Generate Slide" → AI creates your SVG → Preview appears below
   </text>
 </svg>
