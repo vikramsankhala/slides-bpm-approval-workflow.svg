@@ -1,4 +1,4 @@
-﻿<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
   <!-- Background gradient -->
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -25,6 +25,6 @@
   
   <!-- Tagline -->
   <text x="400" y="520" fill="#aaa" font-size="20" text-anchor="middle" font-style="italic" data-animate="true">
-    Simple " Elegant " Powerful
+    Simple &quot; Elegant &quot; Powerful
   </text>
 </svg>
