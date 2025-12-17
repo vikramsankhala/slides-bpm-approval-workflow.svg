@@ -1,4 +1,4 @@
-﻿<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
   <rect width="800" height="600" fill="#16213e"/>
   
   <!-- Step indicator -->
@@ -14,7 +14,7 @@
   
   <!-- Button representation -->
   <rect x="300" y="200" width="200" height="60" fill="#2196F3" rx="8" data-animate="true"/>
-  <text x="400" y="240" fill="#fff" font-size="24" text-anchor="middle" font-weight="bold" data-animate="true"> AI Generator</text>
+  <text x="400" y="240" fill="#fff" font-size="24" text-anchor="middle" font-weight="bold" data-animate="true">AI Generator</text>
   
   <!-- Arrow pointing down -->
   <path d="M 400 280 L 400 320" stroke="#4CAF50" stroke-width="4" marker-end="url(#arrow)" data-animate="true"/>
@@ -33,7 +33,7 @@
   <!-- Instructions -->
   <rect x="100" y="520" width="600" height="50" fill="#333" rx="6" data-animate="true"/>
   <text x="400" y="545" fill="#4CAF50" font-size="18" text-anchor="middle" font-weight="bold" data-animate="true">
-    Click the blue " AI Generator" button at the bottom of the screen
+    Click the blue AI Generator button at the bottom of the screen
   </text>
   <text x="400" y="565" fill="#aaa" font-size="14" text-anchor="middle" data-animate="true">
     A modal window will open with generation options

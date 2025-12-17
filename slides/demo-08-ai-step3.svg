@@ -1,4 +1,4 @@
-﻿<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
   <rect width="800" height="600" fill="#16213e"/>
   
   <!-- Step indicator -->
@@ -29,6 +29,6 @@
   
   <!-- Instructions -->
   <text x="400" y="540" fill="#fff" font-size="18" text-anchor="middle" data-animate="true">
-    Click "Generate Slide"  AI creates your SVG  Preview appears below
+    Click Generate Slide, then AI creates your SVG, then Preview appears below
   </text>
 </svg>
